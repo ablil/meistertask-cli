@@ -4,6 +4,7 @@ import argparse
 from typing import List, Dict
 from helpers import RED, YELLOW, END
 
+
 class Parser:
     def __init__(self):
         self.github_link = "https://github.com/ablil/meistertask-cli"
@@ -50,6 +51,26 @@ class Parser:
             help="show detailed information about project",
             metavar="name",
             dest="read_project",
+        )
+
+        sections_group = self.parser.add_mutually_exclusive_group()
+        sections_group.add_argument(
+            "--open",
+            action="store_true",
+            help="show only open tasks (works with --show-project)",
+            dest="open",
+        )
+        sections_group.add_argument(
+            "--inprogress",
+            action="store_true",
+            help="show only tasks in progress (works with --show-project)",
+            dest="inprogress",
+        )
+        sections_group.add_argument(
+            "--done",
+            action="store_true",
+            help="show only tasks which are done (works with --show-project)",
+            dest="done",
         )
 
         # task management
@@ -131,6 +152,14 @@ class Parser:
             if args.read_project:
                 user_input["operation"] = "read"
                 user_input["data"]["project_name"] = str(args.read_project[0])
+
+                # check if section is specified
+                if args.open:
+                    user_input["data"]["section"] = "open"
+                if args.inprogress:
+                    user_input["data"]["section"] = "inprogress"
+                if args.done:
+                    user_input["data"]["section"] = "done"
 
         elif any(task_args):
             user_input["task"] = True

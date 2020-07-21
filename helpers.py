@@ -2,6 +2,7 @@
 
 from typing import Dict, List
 import os
+import re
 
 GREEN = "\33[32m"
 RED = "\33[31m"
@@ -9,6 +10,7 @@ YELLOW = "\33[33m"
 CYAN = "\33[96m"
 PURPLE = "\33[95m"
 END = "\33[0m"
+
 
 def format_datetime(datetime: str):
     date, time = datetime.split("T")
@@ -67,6 +69,14 @@ def get_auth_key():
         print(f"{RED}Authentication key is required{END}")
         print("For more info check: https://github.com/ablil/meistertask-cli")
         exit(1)
+
+
+def filter_sections_by_name(sections: List[Dict], name: str) -> List:
+    return list(
+        filter(
+            lambda section: re.match(section["name"].lower(), name.lower()), sections
+        )
+    )
 
 
 if __name__ == "__main__":

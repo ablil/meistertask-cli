@@ -29,7 +29,9 @@ class Meistertask:
 
                 project_name: str = self.user_input["data"]["project_name"]
                 if len(project_name) < 5:
-                    print(f"[?] {RED}You must specifiy a valid project name (mandatory){END}")
+                    print(
+                        f"[?] {RED}You must specifiy a valid project name (mandatory){END}"
+                    )
                     print("[?] {RED}Project name must be at least 05 characters{END}")
                     exit(1)
 
@@ -55,8 +57,12 @@ class Meistertask:
 
             if self.user_input["operation"] == "delete":
 
-                print(f"[?] {YELLOW}Sorry this options is not available for the momemt{END}")
-                print(f"[?] {YELLOW}You need to delete projects manually from the platform{END}")
+                print(
+                    f"[?] {YELLOW}Sorry this options is not available for the momemt{END}"
+                )
+                print(
+                    f"[?] {YELLOW}You need to delete projects manually from the platform{END}"
+                )
                 exit(1)
 
             if self.user_input["operation"] == "read":
@@ -77,6 +83,13 @@ class Meistertask:
                     sections: List[Dict] = self.api._get_section_by_project(
                         project["id"]
                     )
+
+                    # if section filter is applied from the command args, apply
+                    if "section" in self.user_input["data"].keys():
+                        sections = filter_sections_by_name(
+                            sections, self.user_input["data"]["section"]
+                        )
+
                     tasks: List[Dict] = self.api.get_tasks(project["id"])
 
                     display_detailed_project(project, sections, tasks)
@@ -86,7 +99,9 @@ class Meistertask:
                         project: Dict = projects[i]
                         print("\t[{}] {}".format(i, project["name"]))
                     else:
-                        print(f"\n[?] {YELLOW}Multiple project with the same name are found{END}")
+                        print(
+                            f"\n[?] {YELLOW}Multiple project with the same name are found{END}"
+                        )
 
                     while True:
                         try:
@@ -117,7 +132,9 @@ class Meistertask:
 
             # select a project if multiple are found with the same name
             if len(projects) == 0:
-                print(f"[-] {RED}Not project is found, make sure to write the right name{END}")
+                print(
+                    f"[-] {RED}Not project is found, make sure to write the right name{END}"
+                )
             elif len(projects) == 1:
                 project = projects[0]
             else:
@@ -125,7 +142,9 @@ class Meistertask:
                     project: Dict = projects[i]
                     print("\t[{}] {}".format(i, project["name"]))
                 else:
-                    print(f"\n[?] {YELLOW}Multiple project with the same name are found{END}")
+                    print(
+                        f"\n[?] {YELLOW}Multiple project with the same name are found{END}"
+                    )
 
                 while True:
                     try:
@@ -177,14 +196,20 @@ class Meistertask:
 
                 if "errors" in task.keys():
                     print(f"[-] {RED}Failed to add task, Try again{END}")
-                    print("[-] {}Error: {}{}".format(RED, task["errors"][0]["message"], END))
+                    print(
+                        "[-] {}Error: {}{}".format(
+                            RED, task["errors"][0]["message"], END
+                        )
+                    )
                     exit(1)
                 else:
                     display_task(task)
                     print(f"[+] {GREEN}Task addedd successfully{END}")
 
             if self.user_input["operation"] == "delete":
-                print(f"{YELLOW}[?] Delete operation is not available for the moment{END}")
+                print(
+                    f"{YELLOW}[?] Delete operation is not available for the moment{END}"
+                )
                 print("[?] For more info: https://github.com/ablil/meistertask-cli")
                 exit(1)
 
@@ -196,7 +221,9 @@ class Meistertask:
 
                 # choice a task if multiple are found
                 if len(tasks) == 0:
-                    print(f"[-] {RED}No Task is found, make sure to write the right name{END}")
+                    print(
+                        f"[-] {RED}No Task is found, make sure to write the right name{END}"
+                    )
                     exit(1)
                 elif len(tasks) == 1:
                     task = tasks[0]
@@ -243,7 +270,11 @@ class Meistertask:
 
                 if "errors" in task.keys():
                     print(f"[-] {RED}Failed to update task{END}")
-                    print("[-] {}Error: {}{}".format(RED, task["errors"][0]["message"], END))
+                    print(
+                        "[-] {}Error: {}{}".format(
+                            RED, task["errors"][0]["message"], END
+                        )
+                    )
                     exit(1)
                 else:
                     display_task(task)
