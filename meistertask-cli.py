@@ -196,7 +196,8 @@ class Meistertask:
 
                 # choice a task if multiple are found
                 if len(tasks) == 0:
-                    print(f"[-] {RED}Not Task is found, make sure to write the right name{END}")
+                    print(f"[-] {RED}No Task is found, make sure to write the right name{END}")
+                    exit(1)
                 elif len(tasks) == 1:
                     task = tasks[0]
                 else:
