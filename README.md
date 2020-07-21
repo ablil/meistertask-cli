@@ -17,7 +17,7 @@ And here it is :smiely:
 
 > **warning**: *Some of the features are not available because the official meistertask api does not support them yet.*
 
-## Overview (demo)
+## Overview (video need to be updated)
 
 [![asciicast](https://asciinema.org/a/348623.svg)](https://asciinema.org/a/348623)
 
@@ -53,26 +53,42 @@ Clone the project from github and run your meistertask-cli
 > cd meistertask-cli
 > python3 meistertask-cli --help
 ```
-```
-usage: meistertask-cli [-h]
-                       [--list-projects | --create-project name | --delete-project | --show-project name]
-                       [--select-project name]
-                       [--add-task name | --remove-task | --update-task name]
 
-Meistertask command line tool
+### Project help
+```
+usage: meistertask-cli projects [-h] [-l] [-c name] [-d] [-s name]
+                                [--open | --inprogress | --done]
+
+Manage meistertask projects
 
 optional arguments:
   -h, --help            show this help message and exit
-  --list-projects       list all projects
-  --create-project name
-                        create new project
-  --delete-project      delete existing project
-  --show-project name   show detailed information about project
-  --select-project name
-                        select a project
-  --add-task name       add new task to project
-  --remove-task         remove task from project
-  --update-task name    update task status
+  -l, --list            List all active projects
+  -c name, --create name
+                        Create new project
+  -d, --delete          Delete a project
+  -s name, --show name  Show project in details
+  --open                Show only open tasks (works with --show)
+  --inprogress          Show only tasks in progress (works with --show)
+  --done                Show only tasks which are done (works with --show)
+
+For more information check: https://github.com/ablil/meistertask-cli
+```
+### Tasks help
+```
+usage: meistertask-cli tasks [-h] -s name [-a name | -r | -u name]
+
+Manage project tasks
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s name, --select name
+                        Select project (For tasks operations, project is
+                        needed)
+  -a name, --add name   Add task to project
+  -r, --remove          Remove task from project
+  -u name, --update name
+                        Update task
 
 For more information check: https://github.com/ablil/meistertask-cli
 ```
@@ -80,7 +96,7 @@ You can typically perfom the following operations
 
 * Create new project
     ```
-    user@box#: python3 meistertask-cli.py --create-project 'my new project'
+    user@box#: python3 meistertask-cli.py projects --create 'my new project'
     Type project description (default: empty): lorem ipsum random text
 
     > Project Name:  my new project
@@ -92,7 +108,7 @@ You can typically perfom the following operations
 
 * Show a project in Details
     ```
-    user@box#: python3 meistertask-cli --show-project 'bug-tracker'
+    user@box#: python3 meistertask-cli projects --show 'bug-tracker'
     > Project Name:  bug-tracker
     > Project Description:  bug tracker for web developper and project managers
         > Section:  Open
@@ -118,7 +134,7 @@ You can typically perfom the following operations
 
 * List all your projects:
     ```
-    user@box#: python3 meistertask-cli.py --list-projects
+    user@box#: python3 meistertask-cli.py projects --list
 
     > Project Name:  College Attendance App
     > Project Description:  Android Project for School
@@ -138,7 +154,7 @@ You can typically perfom the following operations
 
 * Add new task
     ```
-    user@box#: python3 meistertask-cli.py --select-project 'my new project' --add-task 'my first task'
+    user@box#: python3 meistertask-cli.py tasks --select 'my new project' --add 'my first task'
     Type task description (default: empty): do some operation here
     [0] Open
     [1] In Progress
@@ -154,7 +170,7 @@ You can typically perfom the following operations
 
 * Move task to a new sections
     ```
-    user@box#: python3 meistertask-cli.py --select-project 'my new project' --update-task 'my first task'
+    user@box#: python3 meistertask-cli.py tasks --select 'my new project' --update-task 'my first task'
         [0] my first task (None)
         [1] my first task (this is the descriptions)
         [2] my first task (do some operation here)
@@ -191,6 +207,6 @@ There are multiple features that need to be included, feel free to contribute, i
 Or contact me: ablil@pm.me
 
 ## Todo
-- [ ] Colorful output
+- [x] Colorful output
 - [ ] Checklist support
 - [ ] Comment tasks
