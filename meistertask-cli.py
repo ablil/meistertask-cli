@@ -29,8 +29,8 @@ class Meistertask:
 
                 project_name: str = self.user_input["data"]["project_name"]
                 if len(project_name) < 5:
-                    print("[?] You must specifiy a valid project name (mandatory)")
-                    print("[?] Project name must be at least 05 characters")
+                    print(f"[?] {RED}You must specifiy a valid project name (mandatory){END}")
+                    print("[?] {RED}Project name must be at least 05 characters{END}")
                     exit(1)
 
                 project_description = str(
@@ -48,29 +48,29 @@ class Meistertask:
                     self.api.create_section(project["id"], "Done")
 
                     display_project(project)
-                    print("[+] Project created Successfully")
+                    print(f"[+] {GREEN}Project created Successfully{END}")
                 else:
-                    print("[-] Failed to create project ,try again")
-                    print("[-] Error: ", project["errors"][0]["message"])
+                    print(f"[-] {RED}Failed to create project ,try again{END}")
+                    print(f"[-] {RED}Error{END}: ", project["errors"][0]["message"])
 
             if self.user_input["operation"] == "delete":
 
-                print("[?] Sorry this options is not available for the momemt")
-                print("[?] You need to delete projects manually from the platform")
+                print(f"[?] {YELLOW}Sorry this options is not available for the momemt{END}")
+                print(f"[?] {YELLOW}You need to delete projects manually from the platform{END}")
                 exit(1)
 
             if self.user_input["operation"] == "read":
 
                 project_name: str = self.user_input["data"]["project_name"]
                 if not len(project_name):
-                    print("[-] You must specify a project name")
+                    print(f"[-] {RED}You must specify a project name{END}")
                     exit(1)
 
                 projects: List[dict] = self.api._get_project_by_name(project_name)
 
                 # select a project if multiple are found
                 if len(projects) == 0:
-                    print("[-] No project is found")
+                    print(f"[-] {YELLOW}No project is found{END}")
                 elif len(projects) == 1:
                     project = projects[0]
 
@@ -86,7 +86,7 @@ class Meistertask:
                         project: Dict = projects[i]
                         print("\t[{}] {}".format(i, project["name"]))
                     else:
-                        print("\n[?] Multiple project with the same name are found")
+                        print(f"\n[?] {YELLOW}Multiple project with the same name are found{END}")
 
                     while True:
                         try:
@@ -94,7 +94,7 @@ class Meistertask:
                             if choice < len(projects) and choice >= 0:
                                 break
                         except Exception:
-                            print("Select a valid project number")
+                            print(f"{YELLOW}Select a valid project number{END}")
 
                     project: Dict = projects[choice]
 
@@ -117,7 +117,7 @@ class Meistertask:
 
             # select a project if multiple are found with the same name
             if len(projects) == 0:
-                print("[-] Not project is found, make sure to write the right name")
+                print(f"[-] {RED}Not project is found, make sure to write the right name{END}")
             elif len(projects) == 1:
                 project = projects[0]
             else:
@@ -125,7 +125,7 @@ class Meistertask:
                     project: Dict = projects[i]
                     print("\t[{}] {}".format(i, project["name"]))
                 else:
-                    print("\n[?] Multiple project with the same name are found")
+                    print(f"\n[?] {YELLOW}Multiple project with the same name are found{END}")
 
                 while True:
                     try:
@@ -133,7 +133,7 @@ class Meistertask:
                         if choice < len(projects) and choice >= 0:
                             break
                     except Exception:
-                        print("Select a valid project number")
+                        print(f"{YELLOW}Select a valid project number{END}")
 
                 project: Dict = projects[choice]
 
@@ -141,8 +141,8 @@ class Meistertask:
                 task_name: str = str(self.user_input["data"]["task_name"])
 
                 if len(task_name) < 5:
-                    print("[?] Please spicify a valid task name")
-                    print("[?] Task name must be at least 5 characters long")
+                    print(f"[?] {RED}Please spicify a valid task name{END}")
+                    print(f"[?] {RED}Task name must be at least 5 characters long{END}")
                     exit(1)
 
                 task_description: str = str(
@@ -176,15 +176,15 @@ class Meistertask:
                 )
 
                 if "errors" in task.keys():
-                    print("[-] Failed to add task, Try again")
-                    print("[-] Error: {}".format(task["errors"][0]["message"]))
+                    print(f"[-] {RED}Failed to add task, Try again{END}")
+                    print("[-] {}Error: {}{}".format(RED, task["errors"][0]["message"], END))
                     exit(1)
                 else:
                     display_task(task)
-                    print("[+] Task addedd successfully")
+                    print(f"[+] {GREEN}Task addedd successfully{END}")
 
             if self.user_input["operation"] == "delete":
-                print("[?] Delete operation is not available for the moment")
+                print(f"{YELLOW}[?] Delete operation is not available for the moment{END}")
                 print("[?] For more info: https://github.com/ablil/meistertask-cli")
                 exit(1)
 
@@ -196,7 +196,7 @@ class Meistertask:
 
                 # choice a task if multiple are found
                 if len(tasks) == 0:
-                    print("[-] Not Task is found, make sure to write the right name")
+                    print(f"[-] {RED}Not Task is found, make sure to write the right name{END}")
                 elif len(tasks) == 1:
                     task = tasks[0]
                 else:
@@ -241,12 +241,12 @@ class Meistertask:
                 task: Dict = self.api.alter_task(task["id"], section["id"])
 
                 if "errors" in task.keys():
-                    print("[-] Failed to update task")
-                    print("[-] Error: {}".format(task["errors"][0]["message"]))
+                    print(f"[-] {RED}Failed to update task{END}")
+                    print("[-] {}Error: {}{}".format(RED, task["errors"][0]["message"], END))
                     exit(1)
                 else:
                     display_task(task)
-                    print("[+] Task updated successfully")
+                    print(f"[+] {GREEN}Task updated successfully{END}")
 
 
 def main():

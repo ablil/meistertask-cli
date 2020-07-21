@@ -2,7 +2,7 @@
 
 import argparse
 from typing import List, Dict
-
+from helpers import RED, YELLOW, END
 
 class Parser:
     def __init__(self):
@@ -116,7 +116,7 @@ class Parser:
 
         if any(project_args) and any(task_args):
             self.parser.print_help()
-            print("Project and Task operations can NOT be combined togother")
+            print(f"{RED}Project and Task operations can NOT be combined togother{END}")
             exit(1)
 
         elif any(project_args):
@@ -135,7 +135,7 @@ class Parser:
         elif any(task_args):
             user_input["task"] = True
             if not len(args.project_name):
-                print("Project name must be specified for task management")
+                print(f"{RED}Project name must be specified for task management{END}")
                 exit(1)
             else:
                 user_input["data"]["project_name"] = str(args.project_name[0])

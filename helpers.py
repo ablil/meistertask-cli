@@ -3,6 +3,12 @@
 from typing import Dict, List
 import os
 
+GREEN = "\33[32m"
+RED = "\33[31m"
+YELLOW = "\33[33m"
+CYAN = "\33[96m"
+PURPLE = "\33[95m"
+END = "\33[0m"
 
 def format_datetime(datetime: str):
     date, time = datetime.split("T")
@@ -12,18 +18,18 @@ def format_datetime(datetime: str):
 
 def display_project(project: Dict):
     print("")
-    print("> Project Name: ", project["name"])
-    print("> Project Description: ", project["notes"])
-    print("> Created at: ", format_datetime(project["created_at"]))
-    print("> Updated at: ", format_datetime(project["updated_at"]))
+    print(f"> {CYAN}Project Name{END}: ", project["name"])
+    print(f"> {CYAN}Project Description{END}: ", project["notes"])
+    print(f"> {CYAN}Created at{END}: ", format_datetime(project["created_at"]))
+    print(f"> {CYAN}Updated at{END}: ", format_datetime(project["updated_at"]))
 
 
 def display_task(task: Dict):
     print("")
-    print("> Task: ", task["name"])
-    print("> Description: ", task["notes"])
-    print("> Section: ", task["section_name"])
-    print("> Created: ", format_datetime(task["created_at"]))
+    print(f"> {CYAN}Task{END}: ", task["name"])
+    print(f"> {CYAN}Description{END}: ", task["notes"])
+    print(f"> {CYAN}Section{END}: ", task["section_name"])
+    print(f"> {CYAN}Created{END}: ", format_datetime(task["created_at"]))
 
 
 def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Dict]):
@@ -32,8 +38,8 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
     """
 
     # display project summary
-    print("> Project Name: ", project["name"])
-    print("> Project Description: ", project["notes"])
+    print(f"> {CYAN}Project Name{END}: ", project["name"])
+    print(f"> {CYAN}Project Description{END}: ", project["notes"])
 
     # display tasks grouped by sections
     for section in sections:
@@ -41,10 +47,10 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
             filter(lambda task: task["section_id"] == section["id"], tasks)
         )
 
-        print("\t> Section: ", section["name"])
+        print(f"\t> {PURPLE}Section{END}: ", section["name"])
         for task in tasks_by_section:
-            print("\t\t> Task: ", task["name"])
-            print("\t\t> Description: ", task["notes"])
+            print(f"\t\t> {YELLOW}Task{END}: ", task["name"])
+            print(f"\t\t> {YELLOW}Description{END}: ", task["notes"])
             print("")
         else:
             print("")
@@ -58,7 +64,7 @@ def get_auth_key():
     try:
         return str(os.environ["MEISTERTASK"])
     except KeyError:
-        print("Authentication key is required")
+        print(f"{RED}Authentication key is required{END}")
         print("For more info check: https://github.com/ablil/meistertask-cli")
         exit(1)
 
