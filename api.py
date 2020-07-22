@@ -4,6 +4,7 @@ import requests
 import json
 import re
 from typing import List, Dict
+from helpers import RED, END
 
 
 class API:
@@ -121,6 +122,22 @@ class API:
         )
 
         return filterd_tasks
+
+    @staticmethod
+    def check_errors(msg: str, response: Dict):
+        """Check if the reponse contains an errors.
+            Exit when found.
+
+        Parameters:
+        msg: message to display if an error is found
+        response: response object from the request call
+
+        """
+
+        if "errors" in response.keys():
+            print(f"{RED} [-] {msg.capitalize()}{END}")
+            print(f"{RED} Error: {END}", response["errors"][0]["message"])
+            exit(1)
 
 
 if __name__ == "__main__":

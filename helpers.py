@@ -79,5 +79,13 @@ def filter_sections_by_name(sections: List[Dict], name: str) -> List:
     )
 
 
+def print_error_and_exit(*messages):
+
+    for msg in messages:
+        print(f"{RED} [-] {msg.capitalize()}{END}")
+
+    exit(1)
+
+
 if __name__ == "__main__":
     print("This module is indented to be incluced only")

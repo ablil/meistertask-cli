@@ -26,272 +26,161 @@ class Meistertask:
                     display_project(project)
 
             if self.user_input["operation"] == "create":
-
                 project_name: str = self.user_input["data"]["project_name"]
-                if len(project_name) < 5:
-                    print(
-                        f"[?] {RED}You must specifiy a valid project name (mandatory){END}"
-                    )
-                    print("[?] {RED}Project name must be at least 05 characters{END}")
-                    exit(1)
-
-                project_description = str(
-                    input("Type project description (default: empty): ")
-                )
-
-                project: Dict = self.api.create_project(
-                    project_name, project_description
-                )
-
-                if not "errors" in project.keys():
-                    # add default sections: Open, In Progress, Done
-                    self.api.create_section(project["id"], "Open")
-                    self.api.create_section(project["id"], "In Progress")
-                    self.api.create_section(project["id"], "Done")
-
-                    display_project(project)
-                    print(f"[+] {GREEN}Project created Successfully{END}")
-                else:
-                    print(f"[-] {RED}Failed to create project ,try again{END}")
-                    print(f"[-] {RED}Error{END}: ", project["errors"][0]["message"])
+                self._create_project(project_name)
 
             if self.user_input["operation"] == "delete":
 
                 project_name: str = self.user_input["data"]["project_name"]
-                if not len(project_name):
-                    print(f"[-] {RED}You must specify a project name{END}")
-                    exit(1)
-
-                projects: List[dict] = self.api._get_project_by_name(
-                    project_name)
-
-                project: Dict = self.__select_project_if_multiple(projects)
-
-                response: Dict = self.api.delete_project(project["id"])
-
-                # check for errors
-                if "errors" in response.keys():
-                    print(f"{RED} [-] Failed to delete project{END}")
-                    print(f"{RED} Error: {END}:", response["errors"][0]["message"])
-                    exit(1)
-                else:
-                    display_project(response)
-                    print(f"{GREEN} [+] Project is deleted successfully{END}")
+                self._delete_project(project_name)
 
             if self.user_input["operation"] == "read":
 
                 project_name: str = self.user_input["data"]["project_name"]
-                if not len(project_name):
-                    print(f"[-] {RED}You must specify a project name{END}")
-                    exit(1)
 
-                projects: List[dict] = self.api._get_project_by_name(project_name)
+                # check if filter option is passed
+                filter_keyword: str = None
+                if "section" in self.user_input["data"].keys():
+                    filter_keyword = str(self.user_input["data"]["section"])
 
-                # select a project if multiple are found
-                if len(projects) == 0:
-                    print(f"[-] {YELLOW}No project is found{END}")
-                elif len(projects) == 1:
-                    project = projects[0]
-
-                    sections: List[Dict] = self.api._get_section_by_project(
-                        project["id"]
-                    )
-
-                    # if section filter is applied from the command args, apply
-                    if "section" in self.user_input["data"].keys():
-                        sections = filter_sections_by_name(
-                            sections, self.user_input["data"]["section"]
-                        )
-
-                    tasks: List[Dict] = self.api.get_tasks(project["id"])
-
-                    display_detailed_project(project, sections, tasks)
-                else:
-
-                    for i in range(len(projects)):
-                        project: Dict = projects[i]
-                        print("\t[{}] {}".format(i, project["name"]))
-                    else:
-                        print(
-                            f"\n[?] {YELLOW}Multiple project with the same name are found{END}"
-                        )
-
-                    while True:
-                        try:
-                            choice = int(input("[?] Select a project: "))
-                            if choice < len(projects) and choice >= 0:
-                                break
-                        except Exception:
-                            print(f"{YELLOW}Select a valid project number{END}")
-
-                    project: Dict = projects[choice]
-
-                    sections: List[Dict] = self.api._get_section_by_project(
-                        project["id"]
-                    )
-                    tasks: List[Dict] = self.api.get_tasks(project["id"])
-
-                    display_detailed_project(project, sections, tasks)
+                self._show_project(project_name, filter_keyword)
 
         ###############################
         # Task management
         ##############################
         if self.user_input["task"]:
 
+            # extract project first
             projects: List[Dict] = self.api._get_project_by_name(
                 self.user_input["data"]["project_name"]
             )
-            project: Dict = None
-
-            # select a project if multiple are found with the same name
-            if len(projects) == 0:
-                print(
-                    f"[-] {RED}Not project is found, make sure to write the right name{END}"
-                )
-            elif len(projects) == 1:
-                project = projects[0]
-            else:
-                for i in range(len(projects)):
-                    project: Dict = projects[i]
-                    print("\t[{}] {}".format(i, project["name"]))
-                else:
-                    print(
-                        f"\n[?] {YELLOW}Multiple project with the same name are found{END}"
-                    )
-
-                while True:
-                    try:
-                        choice = int(input("[?] Select a project: "))
-                        if choice < len(projects) and choice >= 0:
-                            break
-                    except Exception:
-                        print(f"{YELLOW}Select a valid project number{END}")
-
-                project: Dict = projects[choice]
+            project: Dict = self.__select_project_if_multiple(projects)
 
             if self.user_input["operation"] == "create":
                 task_name: str = str(self.user_input["data"]["task_name"])
-
-                if len(task_name) < 5:
-                    print(f"[?] {RED}Please spicify a valid task name{END}")
-                    print(f"[?] {RED}Task name must be at least 5 characters long{END}")
-                    exit(1)
-
-                task_description: str = str(
-                    input("Type task description (default: empty): ")
-                )
-
-                # choose a section from the project for the task(default: open)
-                sections: List[Dict] = self.api._get_section_by_project(project["id"])
-
-                for i in range(len(sections)):
-                    print("[{}] {}".format(i, sections[i]["name"]))
-
-                while True:
-                    try:
-                        choice = str(
-                            input(
-                                "[?] Choose a section for your task (default: open): "
-                            )
-                        )
-
-                        choice = 0 if not len(choice) else int(choice)
-                        break
-                    except Exception:
-                        print("Please select a valid choice")
-
-                # add task
-                section: Dict = sections[choice]
-
-                task: Dict = self.api.add_task(
-                    section["id"], task_name, task_description
-                )
-
-                if "errors" in task.keys():
-                    print(f"[-] {RED}Failed to add task, Try again{END}")
-                    print(
-                        "[-] {}Error: {}{}".format(
-                            RED, task["errors"][0]["message"], END
-                        )
-                    )
-                    exit(1)
-                else:
-                    display_task(task)
-                    print(f"[+] {GREEN}Task addedd successfully{END}")
+                self._add_task(task_name, project)
 
             if self.user_input["operation"] == "delete":
-                print(
-                    f"{YELLOW}[?] Delete operation is not available for the moment{END}"
+                print_error_and_exit(
+                    "delete operation is not available for the moment",
+                    "for mor info: https://github.com/ablil/meistertask-cli",
                 )
-                print("[?] For more info: https://github.com/ablil/meistertask-cli")
-                exit(1)
 
             if self.user_input["operation"] == "update":
                 task_name: str = self.user_input["data"]["task_name"]
+                self._update_task(task_name, project)
 
-                tasks: List[Dict] = self.api._get_task_by_name(project["id"], task_name)
-                task: Dict = None
+    def _create_project(self, name: str):
 
-                # choice a task if multiple are found
-                if len(tasks) == 0:
-                    print(
-                        f"[-] {RED}No Task is found, make sure to write the right name{END}"
-                    )
-                    exit(1)
-                elif len(tasks) == 1:
-                    task = tasks[0]
-                else:
-                    for i in range(len(tasks)):
-                        task: Dict = tasks[i]
-                        print("\t[{}] {} ({})".format(i, task["name"], task["notes"]))
-                    else:
-                        print("\n[?] Multiple tasks with the same name are found")
+        if len(name) < 5:
+            print_error_and_exit(
+                "you must specify a valid project name",
+                "project name must be at least 05 characters",
+            )
 
-                    while True:
-                        try:
-                            choice = int(input("[?] Select a task: "))
-                            if choice < len(tasks) and choice >= 0:
-                                break
-                        except Exception:
-                            print("Select a valid task number")
+        description = str(input("Type project description (default: empty): "))
 
-                    task = tasks[choice]
+        response: Dict = self.api.create_project(name, description)
 
-                # move task to a specific section
-                sections: List[Dict] = self.api._get_section_by_project(project["id"])
-                section: Dict = None
+        API.check_errors("failed to create project", response)
 
-                for i in range(len(sections)):
-                    print("[{}] {}".format(i, sections[i]["name"]))
+        # add default sections: Open, In Progress, Done
+        project_id: int = response["id"]
+        self.api.create_section(project_id, "Open")
+        self.api.create_section(project_id, "In Progress")
+        self.api.create_section(project_id, "Done")
 
-                while True:
-                    try:
-                        choice = str(
-                            input(
-                                "[?] Choose a section for your task (default: open): "
-                            )
-                        )
+        display_project(response)
+        print(f"[+] {GREEN}Project created Successfully{END}")
 
-                        choice = 0 if not len(choice) else int(choice)
-                        break
-                    except Exception:
-                        print("Please select a valid choice")
+    def _delete_project(self, name: str):
 
-                section = sections[choice]
+        if not len(name):
+            print_error_and_exit("you must specify a project name")
 
-                task: Dict = self.api.alter_task(task["id"], section["id"])
+        projects: List[dict] = self.api._get_project_by_name(name)
 
-                if "errors" in task.keys():
-                    print(f"[-] {RED}Failed to update task{END}")
-                    print(
-                        "[-] {}Error: {}{}".format(
-                            RED, task["errors"][0]["message"], END
-                        )
-                    )
-                    exit(1)
-                else:
-                    display_task(task)
-                    print(f"[+] {GREEN}Task updated successfully{END}")
+        project: Dict = self.__select_project_if_multiple(projects)
+
+        response: Dict = self.api.delete_project(project["id"])
+
+        # check errors
+        API.check_errors("failed to delete the project", response)
+
+        # parse repsonse
+        display_project(response)
+        print(f"{GREEN} [+] Project is deleted successfully{END}")
+
+    def _show_project(self, name: str, keyword=None):
+        """Show a proejct by name.
+            Filter sections if keyword is passed
+
+        Parameters:
+        keyword: section filter keyword
+        """
+
+        if not len(name):
+            print_error_and_exit("you must specify a project")
+
+        projects: List[dict] = self.api._get_project_by_name(name)
+
+        project: Dict = self.__select_project_if_multiple(projects)
+
+        # get sections and tasks
+        sections: List[Dict] = self.api._get_section_by_project(project["id"])
+        tasks: List[Dict] = self.api.get_tasks(project["id"])
+
+        # if section filter is applied from the command args, apply it
+        if keyword:
+            sections = filter_sections_by_name(sections, keyword)
+
+        # display project
+        display_detailed_project(project, sections, tasks)
+
+    def _add_task(self, name: str, project: Dict):
+
+        if len(name) < 5:
+            print_error_and_exit(
+                "please specify a valid task name",
+                "task name must be at least 05 characters",
+            )
+
+        description: str = str(input("Type task description (default: empty): "))
+
+        # choose a section from the project for the task(default: open)
+        sections: List[Dict] = self.api._get_section_by_project(project["id"])
+        section: Dict = self.__select_section_if_multipe(sections)
+
+        response: Dict = self.api.add_task(section["id"], name, description)
+
+        API.check_errors("failed to add task", response)
+
+        display_task(response)
+        print(f"[+] {GREEN}Task addedd successfully{END}")
+
+    def _update_task(self, name: str, project: Dict):
+        """Move task from one section to another
+
+        Parameters:
+        name: task name
+        project: the project which the task belong to
+        """
+
+        # get task
+        tasks: List[Dict] = self.api._get_task_by_name(project["id"], name)
+        task: Dict = self.__select_task_if_multiple(tasks)
+
+        # get section of choice
+        sections: List[Dict] = self.api._get_section_by_project(project["id"])
+        section: Dict = self.__select_section_if_multipe(sections)
+
+        # update
+        response: Dict = self.api.alter_task(task["id"], section["id"])
+
+        API.check_errors("failed to update task", response)
+
+        display_task(response)
+        print(f"[+] {GREEN}Task updated successfully{END}")
 
     def __select_project_if_multiple(self, projects: List[Dict]) -> Dict:
         """Given a list of mulitple project, prompt the use to choose one
@@ -311,9 +200,7 @@ class Meistertask:
                 project: Dict = projects[i]
                 print("\t[{}] {}".format(i, project["name"]))
 
-            print(
-                f"\n[?] {YELLOW}Multiple project with the same name are found{END}"
-            )
+            print(f"\n[?] {YELLOW}Multiple project with the same name are found{END}")
 
             while True:
                 try:
@@ -326,6 +213,67 @@ class Meistertask:
             project = projects[choice]
 
         return project
+
+    def __select_section_if_multipe(self, sections: List[Dict], default=0) -> Dict:
+        """Given a list of mulitple project, prompt the use to choose one
+        if not section is select, the default value is choosed
+        
+        Parameters:
+        sections: list of sections
+        default: default section if no one is selected
+
+        Return: section
+        """
+
+        choice: int = default
+
+        for i in range(len(sections)):
+            print("[{}] {}".format(i, sections[i]["name"]))
+
+        while True:
+            try:
+                choice = str(
+                    input("[?] Choose a section for your task (default: open): ")
+                )
+
+                choice = default if not len(choice) else int(choice)
+                break
+            except Exception:
+                print("Please select a valid choice")
+
+        return sections[choice]
+
+    def __select_task_if_multiple(self, tasks: List[Dict]) -> Dict:
+        """Given a list of tasks, prompt the use to choose one
+
+        Returns:
+        task choosed by the users
+        """
+
+        task: Dict = None
+
+        if len(tasks) == 0:
+            print_error_and_exit("no task is found, type the right name")
+        elif len(tasks) == 1:
+            task = tasks[0]
+        else:
+            for i in range(len(tasks)):
+                task: Dict = tasks[i]
+                print("\t[{}] {} ({})".format(i, task["name"], task["notes"]))
+            else:
+                print("\n[?] Multiple tasks with the same name are found")
+
+            while True:
+                try:
+                    choice = int(input("[?] Select a task: "))
+                    if choice < len(tasks) and choice >= 0:
+                        break
+                except Exception:
+                    print("Select a valid task number")
+
+            task = tasks[choice]
+
+        return task
 
 
 def main():

@@ -63,7 +63,7 @@ class Parser:
             nargs=1,
             type=str,
             help="Delete a project",
-            metavar='name',
+            metavar="name",
             dest="delete_project",
         )
         self.project_parser.add_argument(
