@@ -60,8 +60,10 @@ class Parser:
             "-d",
             "--delete",
             "--delete-project",
-            action="store_true",
+            nargs=1,
+            type=str,
             help="Delete a project",
+            metavar='name',
             dest="delete_project",
         )
         self.project_parser.add_argument(
@@ -179,6 +181,7 @@ class Parser:
                     user_input["data"]["project_name"] = str(args.create_project[0])
                 if args.delete_project:
                     user_input["operation"] = "delete"
+                    user_input["data"]["project_name"] = str(args.delete_project)
                 if args.read_project:
                     user_input["operation"] = "read"
                     user_input["data"]["project_name"] = str(args.read_project[0])

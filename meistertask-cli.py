@@ -57,13 +57,26 @@ class Meistertask:
 
             if self.user_input["operation"] == "delete":
 
-                print(
-                    f"[?] {YELLOW}Sorry this options is not available for the momemt{END}"
-                )
-                print(
-                    f"[?] {YELLOW}You need to delete projects manually from the platform{END}"
-                )
-                exit(1)
+                project_name: str = self.user_input["data"]["project_name"]
+                if not len(project_name):
+                    print(f"[-] {RED}You must specify a project name{END}")
+                    exit(1)
+
+                projects: List[dict] = self.api._get_project_by_name(
+                    project_name)
+
+                project: Dict = self.__select_project_if_multiple(projects)
+
+                response: Dict = self.api.delete_project(project["id"])
+
+                # check for errors
+                if "errors" in response.keys():
+                    print(f"{RED} [-] Failed to delete project{END}")
+                    print(f"{RED} Error: {END}:", response["errors"][0]["message"])
+                    exit(1)
+                else:
+                    display_project(response)
+                    print(f"{GREEN} [+] Project is deleted successfully{END}")
 
             if self.user_input["operation"] == "read":
 
@@ -279,6 +292,40 @@ class Meistertask:
                 else:
                     display_task(task)
                     print(f"[+] {GREEN}Task updated successfully{END}")
+
+    def __select_project_if_multiple(self, projects: List[Dict]) -> Dict:
+        """Given a list of mulitple project, prompt the use to choose one
+            Return: project
+        """
+
+        project: Dict = None
+
+        if len(projects) == 0:
+            return None
+        elif len(projects) == 1:
+            project = projects[0]
+        else:
+
+            # get selected project from user
+            for i in range(len(projects)):
+                project: Dict = projects[i]
+                print("\t[{}] {}".format(i, project["name"]))
+
+            print(
+                f"\n[?] {YELLOW}Multiple project with the same name are found{END}"
+            )
+
+            while True:
+                try:
+                    choice = int(input("[?] Select a project: "))
+                    if choice < len(projects) and choice >= 0:
+                        break
+                except Exception:
+                    print(f"{YELLOW}Select a valid project number{END}")
+
+            project = projects[choice]
+
+        return project
 
 
 def main():
