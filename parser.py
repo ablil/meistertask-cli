@@ -66,6 +66,16 @@ class Parser:
             metavar="name",
             dest="delete_project",
         )
+        project_group.add_argument(
+            "-a",
+            "--archive",
+            "--archive-project",
+            nargs=1,
+            type=str,
+            help="Archive a project",
+            metavar="name",
+            dest="archive_project",
+        )
         self.project_parser.add_argument(
             "-s",
             "--show",
@@ -168,6 +178,7 @@ class Parser:
                 args.list_projects,
                 args.create_project,
                 args.delete_project,
+                args.archive_project,
                 args.read_project,
             )
 
@@ -182,6 +193,9 @@ class Parser:
                 if args.delete_project:
                     user_input["operation"] = "delete"
                     user_input["data"]["project_name"] = str(args.delete_project)
+                if args.archive_project:
+                    user_input["operation"] = "archive"
+                    user_input["data"]["project_name"] = str(args.archive_project)
                 if args.read_project:
                     user_input["operation"] = "read"
                     user_input["data"]["project_name"] = str(args.read_project[0])

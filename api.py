@@ -43,6 +43,15 @@ class API:
 
         return r.json()
 
+    def archive_project(self, id: int) -> Dict:
+        r = requests.put(
+            f"https://www.meistertask.com/api/projects/{id}",
+            headers=self.headers,
+            data={"status": 5},
+        )
+
+        return r.json()
+
     def create_section(self, project_id: int, name: str) -> Dict:
         r = requests.post(
             f"https://www.meistertask.com/api/projects/{project_id}/sections",

@@ -34,6 +34,11 @@ class Meistertask:
                 project_name: str = self.user_input["data"]["project_name"]
                 self._delete_project(project_name)
 
+            if self.user_input["operation"] == "archive":
+
+                project_name: str = self.user_input["data"]["project_name"]
+                self._archive_project(project_name)
+
             if self.user_input["operation"] == "read":
 
                 project_name: str = self.user_input["data"]["project_name"]
@@ -110,6 +115,24 @@ class Meistertask:
         # parse repsonse
         display_project(response)
         print(f"{GREEN} [+] Project is deleted successfully{END}")
+
+    def _archive_project(self, name: str):
+
+        if not len(name):
+            print_error_and_exit("you must specify a project name")
+
+        projects: List[dict] = self.api._get_project_by_name(name)
+
+        project: Dict = self.__select_project_if_multiple(projects)
+
+        response: Dict = self.api.archive_project(project["id"])
+
+        # check errors
+        API.check_errors("failed to archive the project", response)
+
+        # parse repsonse
+        display_project(response)
+        print(f"{GREEN} [+] Project is archived successfully{END}")
 
     def _show_project(self, name: str, keyword=None):
         """Show a proejct by name.
