@@ -21,39 +21,42 @@ class Meistertask:
         # Project management
         ##############################
         if self.user_input["project"]:
+            project: Dict = None
+
             if self.user_input["operation"] == "list":
                 projects = self.api.get_projects()
                 for project in projects:
                     display_project(project)
+            else:
+                # exract project
+                project_name: str = self.user_input["data"]["project_name"]
+                if not len(project_name):
+                    print_error_and_exit("you must specify a project name")
+
+                projects: Dict = self.api._get_project_by_name(project_name)
+                project: Dict = self.__select_project_if_multiple(projects)
+
 
             if self.user_input["operation"] == "create":
-                project_name: str = self.user_input["data"]["project_name"]
-                self._create_project(project_name)
+                self._create_project(project)
 
             if self.user_input["operation"] == "update":
-                project_name: str = self.user_input["data"]["project_name"]
-                self._update_project(project_name)
+                self._update_project(project)
 
             if self.user_input["operation"] == "delete":
-
-                project_name: str = self.user_input["data"]["project_name"]
-                self._delete_project(project_name)
+                self._delete_project(project)
 
             if self.user_input["operation"] == "archive":
-
-                project_name: str = self.user_input["data"]["project_name"]
-                self._archive_project(project_name)
+                self._archive_project(project)
 
             if self.user_input["operation"] == "read":
-
-                project_name: str = self.user_input["data"]["project_name"]
 
                 # check if filter option is passed
                 filter_keyword: str = None
                 if "section" in self.user_input["data"].keys():
                     filter_keyword = str(self.user_input["data"]["section"])
 
-                self._show_project(project_name, filter_keyword)
+                self._show_project(project, filter_keyword)
 
         ###############################
         # Task management
@@ -103,14 +106,9 @@ class Meistertask:
         display_project(response)
         print(f"[+] {GREEN}Project created Successfully{END}")
 
-    def _update_project(self, name: str):
+
+    def _update_project(self, project: Dict):
         """update project name and description"""
-
-        if not len(name):
-            print_error_and_exit("you must specify a project name")
-
-        projects: Dict = self.api._get_project_by_name(name)
-        project: Dict = self.__select_project_if_multiple(projects)
 
         if not project:
             print_error_and_exit("not project is found")
@@ -144,18 +142,12 @@ class Meistertask:
                     display_project(response)
                     print(f"{GREEN}[+] Project updated successfully{END}")
 
-    def _delete_project(self, name: str):
 
-        if not len(name):
-            print_error_and_exit("you must specify a project name")
+    def _delete_project(self, project: Dict):
 
         if not yes_or_no("do you want to delete this project"):
             print(f"{CYAN} No project is deleted{END}")
             return
-
-        projects: List[dict] = self.api._get_project_by_name(name)
-
-        project: Dict = self.__select_project_if_multiple(projects)
 
         response: Dict = self.api.delete_project(project["id"])
 
@@ -166,18 +158,14 @@ class Meistertask:
         display_project(response)
         print(f"{GREEN} [+] Project is deleted successfully{END}")
 
-    def _archive_project(self, name: str):
+    def _archive_project(self, project: Dict):
 
-        if not len(name):
+        if not project:
             print_error_and_exit("you must specify a project name")
 
         if not yes_or_no("do you want to archive this project"):
             print(f"{CYAN} No project is deleted{END}")
             return
-
-        projects: List[dict] = self.api._get_project_by_name(name)
-
-        project: Dict = self.__select_project_if_multiple(projects)
 
         response: Dict = self.api.archive_project(project["id"])
 
@@ -188,7 +176,7 @@ class Meistertask:
         display_project(response)
         print(f"{GREEN} [+] Project is archived successfully{END}")
 
-    def _show_project(self, name: str, keyword=None):
+    def _show_project(self, project: None, keyword=None):
         """Show a proejct by name.
             Filter sections if keyword is passed
 
@@ -196,12 +184,8 @@ class Meistertask:
         keyword: section filter keyword
         """
 
-        if not len(name):
+        if not project:
             print_error_and_exit("you must specify a project")
-
-        projects: List[dict] = self.api._get_project_by_name(name)
-
-        project: Dict = self.__select_project_if_multiple(projects)
 
         # get sections and tasks
         sections: List[Dict] = self.api._get_section_by_project(project["id"])
@@ -294,7 +278,7 @@ class Meistertask:
     def __select_section_if_multipe(self, sections: List[Dict], default=0) -> Dict:
         """Given a list of mulitple project, prompt the use to choose one
         if not section is select, the default value is choosed
-        
+
         Parameters:
         sections: list of sections
         default: default section if no one is selected
