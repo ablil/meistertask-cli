@@ -2,10 +2,12 @@
 
 import argparse
 from typing import List, Dict
-from helpers import RED, YELLOW, END
+from helpers import RED, YELLOW, END, print_error_and_exit
 
 
 class Parser:
+    """Wrapper around the command line parser"""
+
     def __init__(self):
         self.github_link = "https://github.com/ablil/meistertask-cli"
 
@@ -15,22 +17,26 @@ class Parser:
             epilog="For more information check: {}".format(self.github_link),
         )
 
-        # subparser
+        # subparsers
         self.project_parser: argparse.ArgumentParser = None
         self.task_parser: argparse.ArgumentParser = None
 
         self.__configure_parser()
 
     def __configure_parser(self):
-        """Add necessary options to argument parser
-        """
+        """Add necessary options to argument parser"""
 
         subparsers = self.parser.add_subparsers(
             title="meistertask-cli",
             description="The following are the supported sub-options: ",
         )
 
-        # Project management args
+        self.__configure_projects_parser(subparsers)
+        self.__configure_tasks_parser(subparsers)
+
+    def __configure_projects_parser(self, subparsers):
+        """Add projects options"""
+
         self.project_parser = subparsers.add_parser(
             "projects",
             description="Manage meistertask projects",
@@ -107,7 +113,9 @@ class Parser:
             dest="done",
         )
 
-        # task management
+    def __configure_tasks_parser(self, subparsers):
+        """ add task options"""
+
         self.task_parser = subparsers.add_parser(
             "tasks",
             description="Manage project tasks",
@@ -154,15 +162,13 @@ class Parser:
             dest="update_task",
         )
 
-    def get_user_input(self):
+    def parse_args(self):
         """Parse arguments and return the user desired operation
 
         Return: 
             Dictionnary representing the project name, the task name, the operation,
             and andy addional data
         """
-        isProjectArgs = False
-        isTaskArgs = False
 
         user_input: Dict = {
             "project": False,
@@ -172,7 +178,26 @@ class Parser:
         }
         args = self.parser.parse_args()
 
-        # parse projects arguments if present
+        isProject = self.__parse_projects_args(args, user_input)
+        isTask = self.__parse_tasks_args(args, user_input)
+
+        # check if no options is specified
+        if not any([isProject, isTask]):
+            self.parser.print_help()
+
+        return user_input
+
+    def __parse_projects_args(self, args, user_input: Dict):
+        """Parse project aguments
+
+        Parameters:
+        args: parsed args from command line (argsparse.parse_args())
+        user_input: dictionary which store the parsed arguement
+
+        Return:
+        Boolean: true if projects arguemtn are parsed, else False
+        """
+
         try:
             project_args = (
                 args.list_projects,
@@ -208,14 +233,23 @@ class Parser:
                     if args.done:
                         user_input["data"]["section"] = "done"
 
-                isProjectArgs = True
+                return True
             else:
                 self.project_parser.print_help()
                 exit(1)
         except AttributeError:
-            pass
+            return False
 
-        # parse task arguments if present
+    def __parse_tasks_args(self, args, user_input):
+        """Parse project aguments
+
+        Parameters:
+        args: parsed args from command line (argsparse.parse_args())
+        user_input: dictionary which store the parsed arguement
+
+        Return:
+        Boolean: true if arguemtn are parsed, else False
+        """
         try:
 
             task_args = (
@@ -244,18 +278,12 @@ class Parser:
                     user_input["operation"] = "update"
                     user_input["data"]["task_name"] = str(args.update_task[0])
 
-                isTaskArgs = True
+                return True
             else:
                 self.task_parser.print_help()
                 exit(1)
         except AttributeError:
-            pass
-
-        # check if no options is specified
-        if (not isProjectArgs) and (not isTaskArgs):
-            self.parser.print_help()
-
-        return user_input
+            return False
 
 
 if __name__ == "__main__":

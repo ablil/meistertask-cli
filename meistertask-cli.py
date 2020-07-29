@@ -302,7 +302,7 @@ class Meistertask:
 def main():
 
     parser = Parser()
-    user_input: Dict = parser.get_user_input()
+    user_input: Dict = parser.parse_args()
 
     auth_key: str = get_auth_key()
 
