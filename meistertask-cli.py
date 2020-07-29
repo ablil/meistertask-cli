@@ -4,6 +4,7 @@ from typing import Dict, List
 from api import API
 from parser import Parser
 from helpers import *
+import requests
 
 
 class Meistertask:
@@ -360,7 +361,10 @@ def main():
     auth_key: str = get_auth_key()
 
     meistertask = Meistertask(user_input, auth_key)
-    meistertask.run()
+    try:
+        meistertask.run()
+    except requests.exceptions.ConnectionError:
+        print_error_and_exit("no internet connection")
 
 
 if __name__ == "__main__":
