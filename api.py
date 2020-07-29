@@ -34,6 +34,22 @@ class API:
 
         return r.json()
 
+    def update_project(self, id: int, name: str = "", description: str = ""):
+
+        data = dict()
+        if len(name):
+            data["name"] = name
+        if len(description):
+            data["notes"] = description
+
+        r = requests.put(
+            f"https://www.meistertask.com/api/projects/{id}",
+            headers=self.headers,
+            data=data,
+        )
+
+        return r.json()
+
     def delete_project(self, id: int) -> Dict:
         r = requests.put(
             f"https://www.meistertask.com/api/projects/{id}",

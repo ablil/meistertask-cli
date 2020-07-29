@@ -87,5 +87,16 @@ def print_error_and_exit(*messages):
     exit(1)
 
 
+def yes_or_no(message: str) -> bool:
+    """Prompt use for confirmation"""
+    while True:
+        choice = str(input(f"{YELLOW}{message} [y/N]: {END}"))
+
+        if choice.lower() in ("y", "yes"):
+            return True
+        if choice.lower() in ("n", "no"):
+            return False
+
+
 if __name__ == "__main__":
     print("This module is indented to be incluced only")

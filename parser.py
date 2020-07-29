@@ -63,6 +63,16 @@ class Parser:
             dest="create_project",
         )
         project_group.add_argument(
+            "-u",
+            "--update",
+            "--update-project",
+            nargs=1,
+            type=str,
+            help="Update project name/description",
+            metavar="name",
+            dest="update_project",
+        )
+        project_group.add_argument(
             "-d",
             "--delete",
             "--delete-project",
@@ -195,13 +205,14 @@ class Parser:
         user_input: dictionary which store the parsed arguement
 
         Return:
-        Boolean: true if projects arguemtn are parsed, else False
+        bool: true if projects arguemtn are parsed, else False
         """
 
         try:
             project_args = (
                 args.list_projects,
                 args.create_project,
+                args.update_project,
                 args.delete_project,
                 args.archive_project,
                 args.read_project,
@@ -215,6 +226,9 @@ class Parser:
                 if args.create_project:
                     user_input["operation"] = "create"
                     user_input["data"]["project_name"] = str(args.create_project[0])
+                if args.update_project:
+                    user_input["operation"] = "update"
+                    user_input["data"]["project_name"] = str(args.update_project)
                 if args.delete_project:
                     user_input["operation"] = "delete"
                     user_input["data"]["project_name"] = str(args.delete_project)
@@ -248,7 +262,7 @@ class Parser:
         user_input: dictionary which store the parsed arguement
 
         Return:
-        Boolean: true if arguemtn are parsed, else False
+        bool: true if arguemtn are parsed, else False
         """
         try:
 

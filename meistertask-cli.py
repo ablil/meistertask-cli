@@ -29,6 +29,10 @@ class Meistertask:
                 project_name: str = self.user_input["data"]["project_name"]
                 self._create_project(project_name)
 
+            if self.user_input["operation"] == "update":
+                project_name: str = self.user_input["data"]["project_name"]
+                self._update_project(project_name)
+
             if self.user_input["operation"] == "delete":
 
                 project_name: str = self.user_input["data"]["project_name"]
@@ -97,6 +101,47 @@ class Meistertask:
 
         display_project(response)
         print(f"[+] {GREEN}Project created Successfully{END}")
+
+    def _update_project(self, name: str):
+        """update project name and description"""
+
+        if not len(name):
+            print_error_and_exit("you must specify a project name")
+
+        projects: Dict = self.api._get_project_by_name(name)
+        project: Dict = self.__select_project_if_multiple(projects)
+
+        if not project:
+            print_error_and_exit("not project is found")
+        else:
+            display_project(project)
+
+            new_name: str = str(
+                input("Type project name (Leave empty to save previous name) : ")
+            ).strip()
+            new_description: str = str(
+                input(
+                    "Type project description (Leave empty to save privious description):\n"
+                )
+            ).strip()
+
+            if not len(new_name) and not len(new_description):
+                print(f"{CYAN} Nothing is updated{END}")
+                exit(0)
+            else:
+                confirmation: bool = yes_or_no(
+                    "are you sure you want to update the project"
+                )
+
+                if confirmation:
+                    response: Dict = self.api.update_project(
+                        project["id"], new_name, new_description
+                    )
+                    API.check_errors("failed to update project", response)
+
+                    # display updated project
+                    display_project(response)
+                    print(f"{GREEN}[+] Project updated successfully{END}")
 
     def _delete_project(self, name: str):
 
