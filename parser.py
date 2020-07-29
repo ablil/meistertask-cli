@@ -44,14 +44,30 @@ class Parser:
         )
         project_group = self.project_parser.add_mutually_exclusive_group()
 
-        project_group.add_argument(
+        project_list = project_group.add_mutually_exclusive_group()
+        project_list.add_argument(
             "-l",
-            "--list",
-            "--list-projects",
+            "--active",
+            "--list-active",
             action="store_true",
-            help="List all active projects",
-            dest="list_projects",
+            help="List active projects",
+            dest="active_projects",
         )
+        project_list.add_argument(
+            "--archived",
+            "--list-archived",
+            action="store_true",
+            help="List archived projects",
+            dest="archived_projects",
+        )
+        project_list.add_argument(
+            "--all",
+            "--list-all",
+            action="store_true",
+            help="List all projects",
+            dest="all_projects",
+        )
+
         project_group.add_argument(
             "-c",
             "--create",
@@ -175,7 +191,7 @@ class Parser:
     def parse_args(self):
         """Parse arguments and return the user desired operation
 
-        Return: 
+        Return:
             Dictionnary representing the project name, the task name, the operation,
             and andy addional data
         """
@@ -210,7 +226,9 @@ class Parser:
 
         try:
             project_args = (
-                args.list_projects,
+                args.active_projects,
+                args.archived_projects,
+                args.all_projects,
                 args.create_project,
                 args.update_project,
                 args.delete_project,
@@ -221,8 +239,18 @@ class Parser:
             if any(project_args):
                 user_input["project"] = True
 
-                if args.list_projects:
+                # Listing projects
+                if any(
+                    [args.active_projects, args.archived_projects, args.all_projects]
+                ):
                     user_input["operation"] = "list"
+                    user_input["data"]["list_filter"] = "active"
+
+                    if args.archived_projects:
+                        user_input["data"]["list_filter"] = "archived"
+                    if args.all_projects:
+                        user_input["data"]["list_filter"] = "all"
+
                 if args.create_project:
                     user_input["operation"] = "create"
                     user_input["data"]["project_name"] = str(args.create_project[0])

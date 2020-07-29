@@ -24,7 +24,8 @@ class Meistertask:
             project: Dict = None
 
             if self.user_input["operation"] == "list":
-                projects = self.api.get_projects()
+                filter_keyword: str = self.user_input["data"]["list_filter"]
+                projects = self.api.get_projects(filter_keyword)
                 for project in projects:
                     display_project(project)
             else:
@@ -35,7 +36,6 @@ class Meistertask:
 
                 projects: Dict = self.api._get_project_by_name(project_name)
                 project: Dict = self.__select_project_if_multiple(projects)
-
 
             if self.user_input["operation"] == "create":
                 self._create_project(project)
@@ -106,7 +106,6 @@ class Meistertask:
         display_project(response)
         print(f"[+] {GREEN}Project created Successfully{END}")
 
-
     def _update_project(self, project: Dict):
         """update project name and description"""
 
@@ -141,7 +140,6 @@ class Meistertask:
                     # display updated project
                     display_project(response)
                     print(f"{GREEN}[+] Project updated successfully{END}")
-
 
     def _delete_project(self, project: Dict):
 

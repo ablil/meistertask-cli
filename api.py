@@ -12,10 +12,13 @@ class API:
         self.auth_key = auth_key
         self.headers: Dict = {"Authorization": f"Bearer {self.auth_key}"}
 
-    def get_projects(self) -> List[Dict]:
+    def get_projects(self, filter_keyword="active") -> List[Dict]:
         r = requests.get(
-            "https://www.meistertask.com/api/projects", headers=self.headers,
+            "https://www.meistertask.com/api/projects",
+            headers=self.headers,
+            params={"status": str(filter_keyword).strip().lower()},
         )
+
         return r.json()
 
     def get_project(self, id: int) -> Dict:
