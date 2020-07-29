@@ -148,6 +148,10 @@ class Meistertask:
         if not len(name):
             print_error_and_exit("you must specify a project name")
 
+        if not yes_or_no("do you want to delete this project"):
+            print(f"{CYAN} No project is deleted{END}")
+            return
+
         projects: List[dict] = self.api._get_project_by_name(name)
 
         project: Dict = self.__select_project_if_multiple(projects)
@@ -165,6 +169,10 @@ class Meistertask:
 
         if not len(name):
             print_error_and_exit("you must specify a project name")
+
+        if not yes_or_no("do you want to archive this project"):
+            print(f"{CYAN} No project is deleted{END}")
+            return
 
         projects: List[dict] = self.api._get_project_by_name(name)
 
