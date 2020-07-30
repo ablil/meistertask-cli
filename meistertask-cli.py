@@ -37,6 +37,10 @@ class Meistertask:
                 projects: Dict = self.api._get_project_by_name(project_name)
                 project: Dict = self.__select_project_if_multiple(projects)
 
+                # check if project is found
+                if not project:
+                    print_error_and_exit("project not found")
+
             if self.user_input["operation"] == "create":
                 self._create_project(project)
 

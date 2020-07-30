@@ -271,7 +271,7 @@ class Parser:
                     if args.open:
                         user_input["data"]["section"] = "open"
                     if args.inprogress:
-                        user_input["data"]["section"] = "inprogress"
+                        user_input["data"]["section"] = "in progress"
                     if args.done:
                         user_input["data"]["section"] = "done"
 
