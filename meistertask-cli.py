@@ -85,9 +85,9 @@ class Meistertask:
                     "for mor info: https://github.com/ablil/meistertask-cli",
                 )
 
-            if self.user_input["operation"] == "update":
+            if self.user_input["operation"] == "move":
                 task_name: str = self.user_input["data"]["task_name"]
-                self._update_task(task_name, project)
+                self._move_task(task_name, project)
 
     def _create_project(self, name: str):
 
@@ -223,7 +223,7 @@ class Meistertask:
         display_task(response)
         print(f"[+] {GREEN}Task addedd successfully{END}")
 
-    def _update_task(self, name: str, project: Dict):
+    def _move_task(self, name: str, project: Dict):
         """Move task from one section to another
 
         Parameters:
@@ -293,7 +293,7 @@ class Meistertask:
         choice: int = default
 
         for i in range(len(sections)):
-            print("[{}] {}".format(i, sections[i]["name"]))
+            print("\t[{}] {}".format(i, sections[i]["name"]))
 
         while True:
             try:
@@ -324,7 +324,13 @@ class Meistertask:
         else:
             for i in range(len(tasks)):
                 task: Dict = tasks[i]
-                print("\t[{}] {} ({})".format(i, task["name"], task["notes"]))
+                print(
+                    "\t[{}] {}: {}".format(
+                        i,
+                        task["name"],
+                        task["notes"] if task["notes"] else "No Description",
+                    )
+                )
             else:
                 print("\n[?] Multiple tasks with the same name are found")
 

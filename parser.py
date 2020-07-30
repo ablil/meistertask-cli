@@ -147,17 +147,13 @@ class Parser:
             description="Manage project tasks",
             epilog="For more information check: {}".format(self.github_link),
         )
-        task_group = self.task_parser.add_mutually_exclusive_group()
+        task_group = self.task_parser.add_mutually_exclusive_group(required=True)
 
         self.task_parser.add_argument(
-            "-s",
-            "--select",
-            "--select-project",
+            "project_name",
             type=str,
-            help="Select project (For tasks operations, project is needed)",
-            metavar="name",
-            dest="project_name",
-            required=True,
+            help="select a project for task operations",
+            metavar="project_name",
         )
         task_group.add_argument(
             "-a",
@@ -166,7 +162,7 @@ class Parser:
             type=str,
             nargs=1,
             help="Add task to project",
-            metavar="name",
+            metavar="task_name",
             dest="create_task",
         )
         task_group.add_argument(
@@ -178,14 +174,14 @@ class Parser:
             dest="delete_task",
         )
         task_group.add_argument(
-            "-u",
-            "--update",
-            "--update-task",
+            "-m",
+            "--move",
+            "--move-task",
             type=str,
             nargs=1,
-            metavar="name",
-            help="Update task",
-            dest="update_task",
+            metavar="task_name",
+            help="Move task from one section to another",
+            dest="move_task",
         )
 
     def parse_args(self):
@@ -298,7 +294,7 @@ class Parser:
                 args.project_name,
                 args.create_task,
                 args.delete_task,
-                args.update_task,
+                args.move_task,
             )
 
             if any(task_args):
@@ -309,16 +305,16 @@ class Parser:
                     )
                     exit(1)
                 else:
-                    user_input["data"]["project_name"] = str(args.project_name[0])
+                    user_input["data"]["project_name"] = str(args.project_name)
 
                 if args.create_task:
                     user_input["operation"] = "create"
                     user_input["data"]["task_name"] = str(args.create_task[0])
                 if args.delete_task:
                     user_input["operation"] = "delete"
-                if args.update_task:
-                    user_input["operation"] = "update"
-                    user_input["data"]["task_name"] = str(args.update_task[0])
+                if args.move_task:
+                    user_input["operation"] = "move"
+                    user_input["data"]["task_name"] = str(args.move_task[0])
 
                 return True
             else:
