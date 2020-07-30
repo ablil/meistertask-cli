@@ -105,5 +105,35 @@ def yes_or_no(message: str) -> bool:
             return False
 
 
+def match_names(name1: str, name2: str) -> bool:
+    """Given two name, typically a project or task name. check if they are the same.
+    First step: lowercase all letter and strip any leading whitespace then check equality.
+    Second step: splits names by whitespace into two sets, and check if there is an intersection.
+    Third step: chech matching using regular express wich has a low quality.
+
+    Parameter:
+        name1: First name to match
+        name2: Second name to match
+    Return:
+        True if names matchs, otherwise False
+    """
+    name1 = name1.strip().lower()
+    name2 = name2.strip().lower()
+
+    if name1 == name2:
+        return True
+
+    words1: Set = set(name1.split(" "))
+    words2: Set = set(name2.split(" "))
+
+    if len(words1.intersection(words2)):
+        return True
+
+    if re.match(name1, name2):
+        return True
+
+    return False
+
+
 if __name__ == "__main__":
     print("This module is indented to be incluced only")

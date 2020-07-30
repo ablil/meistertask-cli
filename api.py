@@ -3,8 +3,8 @@
 import requests
 import json
 import re
-from typing import List, Dict
-from helpers import RED, END
+from typing import List, Dict, Set
+from helpers import RED, END, match_names
 
 
 class API:
@@ -112,12 +112,7 @@ class API:
         projects = self.get_projects()
 
         filtered_project: List[Dict] = list(
-            filter(
-                lambda project: re.match(
-                    name.strip().lower(), project["name"].strip().lower()
-                ),
-                projects,
-            )
+            filter(lambda project: match_names(name, project["name"]), projects,)
         )
 
         return filtered_project
@@ -141,12 +136,7 @@ class API:
         tasks: List[Dict] = r.json()
 
         filterd_tasks: List[Dict] = list(
-            filter(
-                lambda task: re.match(
-                    name.strip().lower(), task["name"].strip().lower()
-                ),
-                tasks,
-            )
+            filter(lambda task: match_names(name, task["name"]), tasks,)
         )
 
         return filterd_tasks
