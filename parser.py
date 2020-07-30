@@ -48,21 +48,18 @@ class Parser:
         project_list.add_argument(
             "-l",
             "--active",
-            "--list-active",
             action="store_true",
             help="List active projects",
             dest="active_projects",
         )
         project_list.add_argument(
             "--archived",
-            "--list-archived",
             action="store_true",
             help="List archived projects",
             dest="archived_projects",
         )
         project_list.add_argument(
             "--all",
-            "--list-all",
             action="store_true",
             help="List all projects",
             dest="all_projects",
@@ -71,7 +68,6 @@ class Parser:
         project_group.add_argument(
             "-c",
             "--create",
-            "--create-project,",
             nargs=1,
             type=str,
             help="Create new project",
@@ -81,7 +77,6 @@ class Parser:
         project_group.add_argument(
             "-u",
             "--update",
-            "--update-project",
             nargs=1,
             type=str,
             help="Update project name/description",
@@ -91,7 +86,6 @@ class Parser:
         project_group.add_argument(
             "-d",
             "--delete",
-            "--delete-project",
             nargs=1,
             type=str,
             help="Delete a project",
@@ -101,7 +95,6 @@ class Parser:
         project_group.add_argument(
             "-a",
             "--archive",
-            "--archive-project",
             nargs=1,
             type=str,
             help="Archive a project",
@@ -111,7 +104,6 @@ class Parser:
         self.project_parser.add_argument(
             "-s",
             "--show",
-            "--show-project",
             nargs=1,
             type=str,
             help="Show project in details",
@@ -160,7 +152,6 @@ class Parser:
         task_group.add_argument(
             "-a",
             "--add",
-            "--add-task",
             type=str,
             nargs=1,
             help="Add task to project",
@@ -170,7 +161,6 @@ class Parser:
         task_group.add_argument(
             "-r",
             "--remove",
-            "--remove-task",
             action="store_true",
             help="Remove task from project",
             dest="delete_task",
@@ -178,7 +168,6 @@ class Parser:
         task_group.add_argument(
             "-m",
             "--move",
-            "--move-task",
             type=str,
             nargs=1,
             metavar="task_name",
@@ -190,8 +179,7 @@ class Parser:
         list_tasks = task_group.add_mutually_exclusive_group()
         list_tasks.add_argument(
             "-l",
-            "--list",
-            "--list-all",
+            "--all",
             action="store_true",
             help="List all tasks",
             dest="list_all",
