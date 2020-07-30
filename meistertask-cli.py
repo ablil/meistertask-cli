@@ -28,6 +28,8 @@ class Meistertask:
                 projects = self.api.get_projects(filter_keyword)
                 for project in projects:
                     display_project(project)
+                else:
+                    print(f"\n[+]{GREEN} Total projects: {END} {len(projects)}")
             else:
                 # exract project
                 project_name: str = self.user_input["data"]["project_name"]

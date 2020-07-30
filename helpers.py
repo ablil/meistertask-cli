@@ -49,14 +49,18 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
             filter(lambda task: task["section_id"] == section["id"], tasks)
         )
 
-        print(f"\t> {PURPLE}Section{END}: ", section["name"])
-        for task in tasks_by_section:
-            print(f"\t\t> {YELLOW}Task{END}: ", task["name"])
-            print(f"\t\t> {YELLOW}Description{END}: ", task["notes"])
-            print("")
-        else:
-            print("")
-            print("")
+        if len(tasks_by_section):
+            print(
+                "\t>{}Section:{}: {} ({}{} tasks{})".format(
+                    PURPLE, END, section["name"], YELLOW, len(tasks_by_section), END
+                )
+            )
+            for task in tasks_by_section:
+                print(f"\t\t> {YELLOW}Task{END}: ", task["name"])
+                print(f"\t\t> {YELLOW}Description{END}: ", task["notes"])
+                print("")
+            else:
+                print("")
 
 
 def get_auth_key():
@@ -74,7 +78,10 @@ def get_auth_key():
 def filter_sections_by_name(sections: List[Dict], name: str) -> List:
     return list(
         filter(
-            lambda section: re.match(section["name"].lower(), name.lower()), sections
+            lambda section: re.match(
+                section["name"].lower().strip(), name.lower().strip()
+            ),
+            sections,
         )
     )
 
