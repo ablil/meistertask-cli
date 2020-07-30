@@ -51,7 +51,7 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
 
         if len(tasks_by_section):
             print(
-                "\t>{}Section:{}: {} ({}{} tasks{})".format(
+                "\t> {}Section:{}: {} ({}{} tasks{})".format(
                     PURPLE, END, section["name"], YELLOW, len(tasks_by_section), END
                 )
             )

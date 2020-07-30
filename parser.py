@@ -147,14 +147,16 @@ class Parser:
             description="Manage project tasks",
             epilog="For more information check: {}".format(self.github_link),
         )
-        task_group = self.task_parser.add_mutually_exclusive_group(required=True)
-
+        # Positionnal arguments
         self.task_parser.add_argument(
             "project_name",
             type=str,
             help="select a project for task operations",
             metavar="project_name",
         )
+
+        # Optional arguments
+        task_group = self.task_parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument(
             "-a",
             "--add",
@@ -182,6 +184,29 @@ class Parser:
             metavar="task_name",
             help="Move task from one section to another",
             dest="move_task",
+        )
+
+        # listing taskk group
+        list_tasks = task_group.add_mutually_exclusive_group()
+        list_tasks.add_argument(
+            "-l",
+            "--list",
+            "--list-all",
+            action="store_true",
+            help="List all tasks",
+            dest="list_all",
+        )
+        list_tasks.add_argument(
+            "--open", action="store_true", help="List open tasks", dest="list_open"
+        )
+        list_tasks.add_argument(
+            "--inprogress",
+            action="store_true",
+            help="List in progress tasks",
+            dest="list_inprogress",
+        )
+        list_tasks.add_argument(
+            "--done", action="store_true", help="list done tasks", dest="list_done"
         )
 
     def parse_args(self):
@@ -295,6 +320,10 @@ class Parser:
                 args.create_task,
                 args.delete_task,
                 args.move_task,
+                args.list_all,
+                args.list_open,
+                args.list_inprogress,
+                args.list_done,
             )
 
             if any(task_args):
@@ -315,6 +344,25 @@ class Parser:
                 if args.move_task:
                     user_input["operation"] = "move"
                     user_input["data"]["task_name"] = str(args.move_task[0])
+
+                # listing args
+                if any(
+                    [
+                        args.list_all,
+                        args.list_open,
+                        args.list_done,
+                        args.list_inprogress,
+                    ]
+                ):
+                    user_input["operation"] = "list"
+                if args.list_all:
+                    user_input["data"]["list"] = "all"
+                if args.list_open:
+                    user_input["data"]["list"] = "open"
+                if args.list_inprogress:
+                    user_input["data"]["list"] = "in progress"
+                if args.list_done:
+                    user_input["data"]["list"] = "done"
 
                 return True
             else:

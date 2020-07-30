@@ -74,6 +74,8 @@ class Meistertask:
                 self.user_input["data"]["project_name"]
             )
             project: Dict = self.__select_project_if_multiple(projects)
+            if not project:
+                print_error_and_exit("project not found")
 
             if self.user_input["operation"] == "create":
                 task_name: str = str(self.user_input["data"]["task_name"])
@@ -88,6 +90,9 @@ class Meistertask:
             if self.user_input["operation"] == "move":
                 task_name: str = self.user_input["data"]["task_name"]
                 self._move_task(task_name, project)
+
+            if self.user_input["operation"] == "list":
+                self._show_project(project, self.user_input["data"]["list"])
 
     def _create_project(self, name: str):
 
@@ -190,6 +195,10 @@ class Meistertask:
 
         if not project:
             print_error_and_exit("you must specify a project")
+
+        if keyword == "all":
+            # do not apply any filter
+            keyword = None
 
         # get sections and tasks
         sections: List[Dict] = self.api._get_section_by_project(project["id"])
