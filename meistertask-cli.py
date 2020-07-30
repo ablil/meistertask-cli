@@ -30,6 +30,9 @@ class Meistertask:
                     display_project(project)
                 else:
                     print(f"\n[+]{GREEN} Total projects: {END} {len(projects)}")
+            elif self.user_input["operation"] == "create":
+                project_name: str = self.user_input["data"]["project_name"]
+                self._create_project(project_name)
             else:
                 # exract project
                 project_name: str = self.user_input["data"]["project_name"]
@@ -43,8 +46,7 @@ class Meistertask:
                 if not project:
                     print_error_and_exit("project not found")
 
-            if self.user_input["operation"] == "create":
-                self._create_project(project)
+
 
             if self.user_input["operation"] == "update":
                 self._update_project(project)
