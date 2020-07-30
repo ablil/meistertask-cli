@@ -5,10 +5,19 @@
 Meistertask is a cloud-based project management tool, based on Kanban-style.
 If you are familiar with Trello, then think of it the same way
 
+**Last update**: *2020-07-30*
+
+**Recent changelog**:
+  * change argument parser
+  * add feature to delete projects
+  * list project by their status (active, archived, all)
+  * Improve matching name algorithm
+  * catch internet connection errors
+  * add feature to archive projects
 
 ## Why I build this ?
 
-Once I discoved this platfrom from my tutor during an internship, I basically started using 
+Once I discoved this platfrom from my tutor during an internship, I basically started using
 it on every project project I'm working on.
 
 My problem was the Terminal, most of the time Im working on a terminal / IDE, so it became a pain in the ass for me to open a browser window, authenticate, make a chagne, add a task, create a project ...
@@ -19,7 +28,7 @@ And here it is :smiely:
 
 ## Overview (video need to be updated)
 
-[![asciicast](https://asciinema.org/a/348623.svg)](https://asciinema.org/a/348623)
+[![asciicast](https://asciinema.org/a/350669.svg)](https://asciinema.org/a/350669)
 
 
 ## Requirement
@@ -56,17 +65,24 @@ Clone the project from github and run your meistertask-cli
 
 ### Project help
 ```
-usage: meistertask-cli projects [-h] [-l] [-c name] [-d] [-s name]
-                                [--open | --inprogress | --done]
+usage: meistertask-cli projects [-h] [-l | --archived | --all] [-c name] [-u name] [-d name] [-a name]
+                                [-s name] [--open | --inprogress | --done]
 
 Manage meistertask projects
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l, --list            List all active projects
+  -l, --active          List active projects
+  --archived            List archived projects
+  --all                 List all projects
   -c name, --create name
                         Create new project
-  -d, --delete          Delete a project
+  -u name, --update name
+                        Update project name/description
+  -d name, --delete name
+                        Delete a project
+  -a name, --archive name
+                        Archive a project
   -s name, --show name  Show project in details
   --open                Show only open tasks (works with --show)
   --inprogress          Show only tasks in progress (works with --show)
@@ -76,19 +92,25 @@ For more information check: https://github.com/ablil/meistertask-cli
 ```
 ### Tasks help
 ```
-usage: meistertask-cli tasks [-h] -s name [-a name | -r | -u name]
+usage: meistertask-cli tasks [-h] (-a task_name | -r | -m task_name | [-l | --open | --inprogress | --done)]
+                             project_name
 
 Manage project tasks
 
+positional arguments:
+  project_name          select a project for task operations
+
 optional arguments:
   -h, --help            show this help message and exit
-  -s name, --select name
-                        Select project (For tasks operations, project is
-                        needed)
-  -a name, --add name   Add task to project
+  -a task_name, --add task_name
+                        Add task to project
   -r, --remove          Remove task from project
-  -u name, --update name
-                        Update task
+  -m task_name, --move task_name
+                        Move task from one section to another
+  -l, --all             List all tasks
+  --open                List open tasks
+  --inprogress          List in progress tasks
+  --done                list done tasks
 
 For more information check: https://github.com/ablil/meistertask-cli
 ```
@@ -134,7 +156,7 @@ You can typically perfom the following operations
 
 * List all your projects:
     ```
-    user@box#: python3 meistertask-cli.py projects --list
+    user@box#: python3 meistertask-cli.py projects -l
 
     > Project Name:  College Attendance App
     > Project Description:  Android Project for School
@@ -154,12 +176,12 @@ You can typically perfom the following operations
 
 * Add new task
     ```
-    user@box#: python3 meistertask-cli.py tasks --select 'my new project' --add 'my first task'
+    user@box#: python3 meistertask-cli.py tasks --add 'my first task' 'myprojectname'
     Type task description (default: empty): do some operation here
     [0] Open
     [1] In Progress
     [2] Done
-    [?] Choose a section for your task (default: open): 
+    [?] Choose a section for your task (default: open):
 
     > Task:  my first task
     > Description:  do some operation here
@@ -170,7 +192,7 @@ You can typically perfom the following operations
 
 * Move task to a new sections
     ```
-    user@box#: python3 meistertask-cli.py tasks --select 'my new project' --update-task 'my first task'
+    user@box#: python3 meistertask-cli.py tasks --update-task 'my first task' 'myprojectname'
         [0] my first task (None)
         [1] my first task (this is the descriptions)
         [2] my first task (do some operation here)
@@ -194,7 +216,6 @@ You can typically perfom the following operations
 The following operation, even thougth they are included in the programm, but they are not yet suported the offical api.
 The offcial api is in beta version, once a new feature is added, the meistertrask-cli will be updated as soon as possible.
 
-    * delete project
     * delete task
 
 ## Contribution
