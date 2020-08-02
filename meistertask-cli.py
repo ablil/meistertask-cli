@@ -97,6 +97,13 @@ class Meistertask:
                     "for mor info: https://github.com/ablil/meistertask-cli",
                 )
 
+            if self.user_input["operation"] == "update":
+                task_name: str = str(self.user_input["data"]["task_name"])
+                tasks: List[Dict] = self.api._get_task_by_name(project["id"], task_name)
+                task: Dict = self.__select_task_if_multiple(tasks)
+
+                self._update_task(task)
+
             if self.user_input["operation"] == "move":
                 task_name: str = self.user_input["data"]["task_name"]
                 self._move_task(task_name, project)
@@ -242,6 +249,46 @@ class Meistertask:
         display_task(response)
         print(f"[+] {SUCCESS}Task addedd successfully{END}")
 
+    def _update_task(self, task: Dict):
+        """Update task name and description"""
+
+        if not task:
+            print_error_and_exit("task not found")
+        else:
+            display_task(task)
+
+            new_name: str = str(
+                input("Type task name (Leave empty to save previous name) : ")
+            ).strip()
+            new_description: str = str(
+                input(
+                    "Type task description (Leave empty to save privious description):\n"
+                )
+            ).strip()
+
+            if not len(new_name) and not len(new_description):
+                print(f"{CYAN} Nothing is updated{END}")
+                exit(0)
+            else:
+                confirmation: bool = yes_or_no(
+                    "are you sure you want to update this task"
+                )
+
+                if not len(new_name):
+                    new_name = task["name"]
+                if not len(new_description):
+                    new_description = task["note"]
+
+                if confirmation:
+                    response: Dict = self.api.update_task(
+                        task["id"], new_name, new_description
+                    )
+                    API.check_errors("failed to update project", response)
+
+                    # display updated project
+                    display_task(response)
+                    print(f"{SUCCESS}[+] Task updated successfully{END}")
+
     def _move_task(self, name: str, project: Dict):
         """Move task from one section to another
 
@@ -259,12 +306,12 @@ class Meistertask:
         section: Dict = self.__select_section_if_multipe(sections)
 
         # update
-        response: Dict = self.api.alter_task(task["id"], section["id"])
+        response: Dict = self.api.move_task(task["id"], section["id"])
 
-        API.check_errors("failed to update task", response)
+        API.check_errors("failed to move task", response)
 
         display_task(response)
-        print(f"[+] {SUCCESS}Task updated successfully{END}")
+        print(f"[+] {SUCCESS}Task moved successfully{END}")
 
     def __select_project_if_multiple(self, projects: List[Dict]) -> Dict:
         """Given a list of mulitple project, prompt the use to choose one

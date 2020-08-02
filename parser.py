@@ -59,10 +59,7 @@ class Parser:
             dest="archived_projects",
         )
         project_list.add_argument(
-            "--all",
-            action="store_true",
-            help="List all projects",
-            dest="all_projects",
+            "--all", action="store_true", help="List all projects", dest="all_projects",
         )
 
         project_group.add_argument(
@@ -166,6 +163,15 @@ class Parser:
             dest="delete_task",
         )
         task_group.add_argument(
+            "-u",
+            "--update",
+            type=str,
+            nargs=1,
+            metavar="task_name",
+            help="Update task name or description",
+            dest="update_task",
+        )
+        task_group.add_argument(
             "-m",
             "--move",
             type=str,
@@ -178,11 +184,7 @@ class Parser:
         # listing taskk group
         list_tasks = task_group.add_mutually_exclusive_group()
         list_tasks.add_argument(
-            "-l",
-            "--all",
-            action="store_true",
-            help="List all tasks",
-            dest="list_all",
+            "-l", "--all", action="store_true", help="List all tasks", dest="list_all",
         )
         list_tasks.add_argument(
             "--open", action="store_true", help="List open tasks", dest="list_open"
@@ -307,6 +309,7 @@ class Parser:
                 args.project_name,
                 args.create_task,
                 args.delete_task,
+                args.update_task,
                 args.move_task,
                 args.list_all,
                 args.list_open,
@@ -329,6 +332,9 @@ class Parser:
                     user_input["data"]["task_name"] = str(args.create_task[0])
                 if args.delete_task:
                     user_input["operation"] = "delete"
+                if args.update_task:
+                    user_input["operation"] = "update"
+                    user_input["data"]["task_name"] = str(args.update_task[0])
                 if args.move_task:
                     user_input["operation"] = "move"
                     user_input["data"]["task_name"] = str(args.move_task[0])

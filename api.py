@@ -97,7 +97,16 @@ class API:
 
         return r.json()
 
-    def alter_task(self, task_id: int, section_id: int) -> Dict:
+    def update_task(self, id: int, name: str, description: str = ""):
+        r = requests.put(
+            f"https://www.meistertask.com/api/tasks/{id}",
+            headers=self.headers,
+            data={"name": str(name), "notes": str(description)},
+        )
+
+        return r.json()
+
+    def move_task(self, task_id: int, section_id: int) -> Dict:
 
         r = requests.put(
             f"https://www.meistertask.com/api/tasks/{task_id}",
