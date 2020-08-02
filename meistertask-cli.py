@@ -3,8 +3,18 @@
 from typing import Dict, List
 from api import API
 from parser import Parser
-from helpers import *
 import requests
+
+from helpers import CYAN, GREEN, SUCCESS, ERROR, YELLOW, RED, PURPLE, YELLOW, END
+from helpers import (
+    display_project,
+    display_task,
+    display_detailed_project,
+    print_error_and_exit,
+    yes_or_no,
+    filter_sections_by_name,
+    get_auth_key,
+)
 
 
 class Meistertask:
@@ -45,8 +55,6 @@ class Meistertask:
                 # check if project is found
                 if not project:
                     print_error_and_exit("project not found")
-
-
 
             if self.user_input["operation"] == "update":
                 self._update_project(project)
@@ -117,7 +125,7 @@ class Meistertask:
         self.api.create_section(project_id, "Done")
 
         display_project(response)
-        print(f"[+] {GREEN}Project created Successfully{END}")
+        print(f"[+] {SUCCESS}Project created Successfully{END}")
 
     def _update_project(self, project: Dict):
         """update project name and description"""
@@ -152,7 +160,7 @@ class Meistertask:
 
                     # display updated project
                     display_project(response)
-                    print(f"{GREEN}[+] Project updated successfully{END}")
+                    print(f"{SUCCESS}[+] Project updated successfully{END}")
 
     def _delete_project(self, project: Dict):
 
@@ -167,7 +175,7 @@ class Meistertask:
 
         # parse repsonse
         display_project(response)
-        print(f"{GREEN} [+] Project is deleted successfully{END}")
+        print(f"{SUCCESS} [+] Project is deleted successfully{END}")
 
     def _archive_project(self, project: Dict):
 
@@ -185,7 +193,7 @@ class Meistertask:
 
         # parse repsonse
         display_project(response)
-        print(f"{GREEN} [+] Project is archived successfully{END}")
+        print(f"{SUCCESS} [+] Project is archived successfully{END}")
 
     def _show_project(self, project: None, keyword=None):
         """Show a proejct by name.
@@ -232,7 +240,7 @@ class Meistertask:
         API.check_errors("failed to add task", response)
 
         display_task(response)
-        print(f"[+] {GREEN}Task addedd successfully{END}")
+        print(f"[+] {SUCCESS}Task addedd successfully{END}")
 
     def _move_task(self, name: str, project: Dict):
         """Move task from one section to another
@@ -256,7 +264,7 @@ class Meistertask:
         API.check_errors("failed to update task", response)
 
         display_task(response)
-        print(f"[+] {GREEN}Task updated successfully{END}")
+        print(f"[+] {SUCCESS}Task updated successfully{END}")
 
     def __select_project_if_multiple(self, projects: List[Dict]) -> Dict:
         """Given a list of mulitple project, prompt the use to choose one
@@ -343,7 +351,7 @@ class Meistertask:
                     )
                 )
             else:
-                print("\n[?] Multiple tasks with the same name are found")
+                print(f"\n{YELLOW}[?] Multiple tasks with the same name are found{END}")
 
             while True:
                 try:

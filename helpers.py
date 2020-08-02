@@ -6,6 +6,8 @@ import re
 
 GREEN = "\33[32m"
 RED = "\33[31m"
+ERROR = "\33[41m"
+SUCCESS = "\33[42m"
 YELLOW = "\33[33m"
 CYAN = "\33[96m"
 PURPLE = "\33[95m"
@@ -18,20 +20,46 @@ def format_datetime(datetime: str):
     return f"{date} {time.split('.')[0]}"
 
 
-def display_project(project: Dict):
-    print("")
-    print(f"> {CYAN}Project Name{END}: ", project["name"])
-    print(f"> {CYAN}Project Description{END}: ", project["notes"])
-    print(f"> {CYAN}Created at{END}: ", format_datetime(project["created_at"]))
-    print(f"> {CYAN}Updated at{END}: ", format_datetime(project["updated_at"]))
+def display_project(project: Dict, details=True, summary=False):
+    project_id: int = project["id"]
+    name: str = project["name"]
+    description: str = project["notes"]
+    created_at: str = format_datetime(project["created_at"])
+    updated_at: str = format_datetime(project["updated_at"])
+
+    if summary:
+        print("")
+        print(f"> {CYAN}Project Name {END} ({project_id}) : {name}")
+        print(f"> {CYAN}Project Description{END}: {description}")
+
+    else:
+        print("")
+        print(f"> {CYAN}Project Id{END}: {project_id}")
+        print(f"> {CYAN}Project Name{END}: {name}")
+        print(f"> {CYAN}Project Description{END}: {description}")
+        print(f"> {CYAN}Created at{END}: {created_at}")
+        print(f"> {CYAN}Updated at{END}: {updated_at} ")
 
 
-def display_task(task: Dict):
-    print("")
-    print(f"> {CYAN}Task{END}: ", task["name"])
-    print(f"> {CYAN}Description{END}: ", task["notes"])
-    print(f"> {CYAN}Section{END}: ", task["section_name"])
-    print(f"> {CYAN}Created{END}: ", format_datetime(task["created_at"]))
+def display_task(task: Dict, long_format=True):
+
+    task_id: int = task["id"]
+    name: str = task["name"]
+    description: str = task["notes"]
+    section: str = task["section_name"]
+    created_at: str = format_datetime(task["created_at"])
+
+    if long_format:
+        print("")
+        print(f"> {CYAN}Task Id{END} : {task_id}")
+        print(f"> {CYAN}Task Name{END} : {name}")
+        print(f"> {CYAN}Description{END} : {description}")
+        print(f"> {CYAN}Section{END} : {section}")
+        print(f"> {CYAN}Created{END} : {created_at}")
+    else:
+        print("")
+        print(f"\t\t> {YELLOW}Task{END} ({task_id}) : {name}")
+        print(f"\t\t> {YELLOW}Description{END} : {description}")
 
 
 def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Dict]):
@@ -40,8 +68,7 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
     """
 
     # display project summary
-    print(f"> {CYAN}Project Name{END}: ", project["name"])
-    print(f"> {CYAN}Project Description{END}: ", project["notes"])
+    display_project(project, summary=True)
 
     # display tasks grouped by sections
     for section in sections:
@@ -50,15 +77,14 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
         )
 
         if len(tasks_by_section):
+            section_name: str = section["name"]
+            total_sections: int = len(tasks_by_section)
+
             print(
-                "\t> {}Section:{}: {} ({}{} tasks{})".format(
-                    PURPLE, END, section["name"], YELLOW, len(tasks_by_section), END
-                )
+                f"\t> {PURPLE}Section:{END}: {section_name} ({YELLOW}{total_sections} tasks{END})"
             )
             for task in tasks_by_section:
-                print(f"\t\t> {YELLOW}Task{END}: ", task["name"])
-                print(f"\t\t> {YELLOW}Description{END}: ", task["notes"])
-                print("")
+                display_task(task, long_format=False)
             else:
                 print("")
 
