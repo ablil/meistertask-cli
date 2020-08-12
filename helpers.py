@@ -3,6 +3,7 @@
 from typing import Dict, List, Set
 import os
 import re
+import textwrap
 
 GREEN = "\33[32m"
 RED = "\33[31m"
@@ -53,13 +54,17 @@ def display_task(task: Dict, long_format=True):
         print("")
         print(f"> {CYAN}Task Id{END} : {task_id}")
         print(f"> {CYAN}Task Name{END} : {name}")
-        print(f"> {CYAN}Description{END} : {description}")
+        if description:
+            print(f"> {CYAN}Description{END} : {description}")
         print(f"> {CYAN}Section{END} : {section}")
         print(f"> {CYAN}Created{END} : {created_at}")
     else:
         print("")
         print(f"\t\t> {YELLOW}Task{END} ({task_id}) : {name}")
-        print(f"\t\t> {YELLOW}Description{END} : {description}")
+        if description:
+            print(f"\t\t> {YELLOW}Description{END} :")
+            print(wrap_text(description, width=50, tabs=3))
+
 
 
 def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Dict]):
@@ -160,6 +165,15 @@ def match_names(name1: str, name2: str) -> bool:
 
     return False
 
+def wrap_text(text: str, width=50, tabs=2):
+    if text:
+        text: List[str] = textwrap.wrap(text, width=width)
+        leading_tabs: str = tabs * "\t"
+        text = [''.join([leading_tabs, line]) for line in text]
+        text: str = '\n'.join(text)
+    else:
+        text = ''
+    return text
 
 if __name__ == "__main__":
     print("This module is indented to be incluced only")
