@@ -8,12 +8,9 @@ If you are familiar with Trello, then think of it the same way
 **Last update**: *2020-07-30*
 
 **Recent changelog**:
-  * change argument parser
-  * add feature to delete projects
-  * list project by their status (active, archived, all)
-  * Improve matching name algorithm
-  * catch internet connection errors
-  * add feature to archive projects
+  * wrap output text when displaying tasks description
+  * add feature to update task name and description
+  * style sucess/error message on output
 
 ## Why I build this ?
 
