@@ -102,6 +102,7 @@ def get_auth_key():
         return str(os.environ["MEISTERTASK"])
     except KeyError:
         print(f"{RED}Authentication key is required{END}")
+        print(f"{RED}Hint: export MEISTERTASK='authentication-key-here'{END}")
         print("For more info check: https://github.com/ablil/meistertask-cli")
         exit(1)
 

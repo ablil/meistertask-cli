@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
 from typing import Dict, List
-from api import API
-from parser import Parser
+from .api import API
+from .parser import Parser
 import requests
 
-from helpers import CYAN, GREEN, SUCCESS, ERROR, YELLOW, RED, PURPLE, YELLOW, END
-from helpers import (
+from .utils import CYAN, GREEN, SUCCESS, ERROR, YELLOW, RED, PURPLE, YELLOW, END
+from .utils import (
     display_project,
     display_task,
     display_detailed_project,

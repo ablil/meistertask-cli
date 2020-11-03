@@ -2,7 +2,7 @@
 
 import argparse
 from typing import List, Dict
-from helpers import RED, YELLOW, END, print_error_and_exit
+from .utils import RED, YELLOW, END, print_error_and_exit
 
 
 class Parser:
@@ -12,7 +12,7 @@ class Parser:
         self.github_link = "https://github.com/ablil/meistertask-cli"
 
         self.parser = argparse.ArgumentParser(
-            prog="meistertask-cli",
+            prog="meistertask",
             description="Meistertask command line tool",
             epilog="For more information check: {}".format(self.github_link),
         )

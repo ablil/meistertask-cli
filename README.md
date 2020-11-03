@@ -5,8 +5,6 @@
 Meistertask is a cloud-based project management tool, based on Kanban-style.
 If you are familiar with Trello, then think of it the same way
 
-**Last update**: *2020-07-30*
-
 **Recent changelog**:
   * wrap output text when displaying tasks description
   * add feature to update task name and description
@@ -53,16 +51,22 @@ You can also that line to .bashrc to save you time.
 
 ## How to use ?
 
-Clone the project from github and run your meistertask-cli
+Install using pip
 ```
-> git clone https://github.com/ablil/meistertask-cli
-> cd meistertask-cli
-> python3 meistertask-cli --help
+# install
+pip install meistertask-cli
+
+# Set authentication key
+export MEISTERTASK=your-key-here
+
+# Start using
+meistertask --help
 ```
+
 
 ### Project help
 ```
-usage: meistertask-cli projects [-h] [-l | --archived | --all] [-c name] [-u name] [-d name] [-a name]
+usage: meistertask projects [-h] [-l | --archived | --all] [-c name] [-u name] [-d name] [-a name]
                                 [-s name] [--open | --inprogress | --done]
 
 Manage meistertask projects

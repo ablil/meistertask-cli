@@ -4,7 +4,7 @@ import requests
 import json
 import re
 from typing import List, Dict, Set
-from helpers import RED, END, match_names
+from .utils import RED, END, match_names
 
 
 class API:
