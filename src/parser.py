@@ -90,6 +90,12 @@ class CustomParser:
         )
         view_parser.add_argument("name", help="project name")
 
+        update_project = project_subparsers.add_parser(
+            "update", aliases=['u', 'e', "edit"], description="Update project name or description"
+        )
+        update_project.add_argument("name", help="project name")
+        
+
         delete_parser = project_subparsers.add_parser(
             "delete", aliases=["d", "rm", "del", "remove"], description="Delete a project"
         )

@@ -15,7 +15,7 @@ from .utils import (
     filter_sections_by_name,
     get_auth_key,
     filter_tasks_by_section,
-    filter_sections_by_name
+    filter_sections_by_name,
 )
 
 
@@ -50,45 +50,14 @@ class Meistertask:
         display_project(response)
         print(f"[+] {SUCCESS}Project created Successfully{END}")
 
-    def project_update(self, project: Dict):
-        # TODO: check this
-        # ! this method is not included in parser docs
+    def project_update(self, id: int, name: str, description=""):
         """update project name and description"""
 
-        display_project(project)
+        response: Dict = self.api.update_project(id, name, description)
+        API.check_errors("failed to update project", response)
 
-        new_name: str = str(
-            input("Type project name (Leave empty to save previous name) : ")
-        ).strip()
-        new_description: str = str(
-            input(
-                "Type project description (Leave empty to save privious description):\n"
-            )
-        ).strip()
-
-        if not len(new_name) and not len(new_description):
-            print(f"{CYAN} Nothing is updated{END}")
-            exit(0)
-        else:
-            while True:
-                try:
-                    choice = str(input('Do you want to archive this project [y/n] ?'))
-                    if choice.lower() in ['y', 'yes', 'no', 'n']:
-                        break
-                    else:
-                        raise ValueError('Invalid choice')
-                except:
-                    print(f'{RED}Valid choices: [y, yes / n, no]{END}')
-
-            if choice.lower() in ('y', 'yes'):
-                response: Dict = self.api.update_project(
-                    project["id"], new_name, new_description
-                )
-                API.check_errors("failed to update project", response)
-
-                # display updated project
-                display_project(response)
-                print(f"{SUCCESS}[+] Project updated successfully{END}")
+        display_project(response)
+        print(f"{SUCCESS}[+] Project updated successfully{END}")
 
     def project_delete(self, id: int):
         """Delete project
@@ -245,7 +214,7 @@ class Meistertask:
 
         tasks: List[Dict] = self.api.get_tasks(project_id)
         if not tasks or not len(tasks):
-            print(f'{RED}No task is found in this project{END}')
+            print(f"{RED}No task is found in this project{END}")
 
         return tasks
 
@@ -258,11 +227,12 @@ class Meistertask:
 
         sections: List[Dict] = self.api._get_section_by_project(id)
         if not sections or not len(sections):
-            print(f'{RED}No section is found in this project{END}')
+            print(f"{RED}No section is found in this project{END}")
             exit(1)
 
         return sections
-        
+
+
 def main():
     token: str = get_auth_key()
     meistertask: Meistertask = Meistertask(token)
@@ -279,6 +249,22 @@ def main():
         if args.option in ("v", "show", "display", "view"):
             project: Dict = meistertask.project_fetch(args.name)
             display_project(project)
+
+        if args.option in ("u", "update", "e", "edit"):
+            project: Dict = meistertask.project_fetch(args.name)
+
+            display_project(project)
+            new_name = str(input("[?] Type new name (Enter to skip):"))
+            new_description = str(input("[?] Type new description (Enter to skip):"))
+
+            name = new_name if (new_name and len(new_name)) else project["name"]
+            description = (
+                new_description
+                if (new_description and len(new_description))
+                else project["description"]
+            )
+
+            meistertask.project_update(project['id'], name, description)
 
         if args.option in ("d", "delete", "r", "remove", "rm"):
             project: Dict = meistertask.project_fetch(args.name)
@@ -314,9 +300,9 @@ def main():
                 else task["description"]
             )
 
-            meistertask.task_update(task['id'], new_name, new_description)
+            meistertask.task_update(task["id"], new_name, new_description)
 
-        if args.option in ('ls', 'l', 'list'):
+        if args.option in ("ls", "l", "list"):
             project: Dict = meistertask.project_fetch(args.project)
             tasks: List[Dict] = meistertask.task_fetch_all(project["id"])
 
@@ -324,13 +310,13 @@ def main():
             for t in filtered:
                 display_task(t)
 
-        if args.option in ('m', 'move', 'mv'):
+        if args.option in ("m", "move", "mv"):
             project: Dict = meistertask.project_fetch(args.project)
             task: Dict = meistertask.task_fetch(args.name, project["id"])
-            sections: List[Dict] = meistertask.section_fetch_all(project['id'])
+            sections: List[Dict] = meistertask.section_fetch_all(project["id"])
             section: Dict = filter_sections_by_name(sections, args.section)
-            meistertask.task_move(task['id'], section['id'])
-    
+            meistertask.task_move(task["id"], section["id"])
+
 
 if __name__ == "__main__":
     main()

@@ -21,12 +21,14 @@ USAGE:
 SUBCOMMANDS
     create:     Create project
     view:       View project
+    update:     Update project name and description
     delete:     Delete project
     list:       List projects (active, deleted, archived)
 
 SUBCOMMANDS ALIASES:
     create:     c
     view:       v, show, display
+    update:     u, e, edit
     delete:     d, rm, del, remove
     list:       l, ls
 """
@@ -38,7 +40,7 @@ USAGE:
 SUBCOMMANDS
     create:     Create taks
     list:       List tasks by section
-    update:     Update task details
+    update:     Update task name and description
     move:       Move task to another section
 
 SUBCOMMANDS ALIASES:
