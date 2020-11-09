@@ -1,370 +1,169 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import argparse
-from typing import List, Dict
-from .utils import RED, YELLOW, END, print_error_and_exit
 
+from .usage import ROOT_USAGE, PROJECT_USAGE, TASK_USAGE
 
-class Parser:
-    """Wrapper around the command line parser"""
-
+class CustomParser:
     def __init__(self):
-        self.github_link = "https://github.com/ablil/meistertask-cli"
-
-        self.parser = argparse.ArgumentParser(
-            prog="meistertask",
-            description="Meistertask command line tool",
-            epilog="For more information check: {}".format(self.github_link),
-        )
-
-        # subparsers
-        self.project_parser: argparse.ArgumentParser = None
-        self.task_parser: argparse.ArgumentParser = None
-
+        self.parser = None 
         self.__configure_parser()
 
-    def __configure_parser(self):
-        """Add necessary options to argument parser"""
-
-        subparsers = self.parser.add_subparsers(
-            title="meistertask-cli",
-            description="The following are the supported sub-options: ",
-        )
-
-        self.__configure_projects_parser(subparsers)
-        self.__configure_tasks_parser(subparsers)
-
-    def __configure_projects_parser(self, subparsers):
-        """Add projects options"""
-
-        self.project_parser = subparsers.add_parser(
-            "projects",
-            description="Manage meistertask projects",
-            epilog="For more information check: {}".format(self.github_link),
-        )
-        project_group = self.project_parser.add_mutually_exclusive_group()
-
-        project_list = project_group.add_mutually_exclusive_group()
-        project_list.add_argument(
-            "-l",
-            "--active",
-            action="store_true",
-            help="List active projects",
-            dest="active_projects",
-        )
-        project_list.add_argument(
-            "--archived",
-            action="store_true",
-            help="List archived projects",
-            dest="archived_projects",
-        )
-        project_list.add_argument(
-            "--all", action="store_true", help="List all projects", dest="all_projects",
-        )
-
-        project_group.add_argument(
-            "-c",
-            "--create",
-            nargs=1,
-            type=str,
-            help="Create new project",
-            metavar="name",
-            dest="create_project",
-        )
-        project_group.add_argument(
-            "-u",
-            "--update",
-            nargs=1,
-            type=str,
-            help="Update project name/description",
-            metavar="name",
-            dest="update_project",
-        )
-        project_group.add_argument(
-            "-d",
-            "--delete",
-            nargs=1,
-            type=str,
-            help="Delete a project",
-            metavar="name",
-            dest="delete_project",
-        )
-        project_group.add_argument(
-            "-a",
-            "--archive",
-            nargs=1,
-            type=str,
-            help="Archive a project",
-            metavar="name",
-            dest="archive_project",
-        )
-        self.project_parser.add_argument(
-            "-s",
-            "--show",
-            nargs=1,
-            type=str,
-            help="Show project in details",
-            metavar="name",
-            dest="read_project",
-        )
-
-        sections_group = project_group.add_mutually_exclusive_group()
-        sections_group.add_argument(
-            "--open",
-            action="store_true",
-            help="Show only open tasks (works with --show)",
-            dest="open",
-        )
-        sections_group.add_argument(
-            "--inprogress",
-            action="store_true",
-            help="Show only tasks in progress (works with --show)",
-            dest="inprogress",
-        )
-        sections_group.add_argument(
-            "--done",
-            action="store_true",
-            help="Show only tasks which are done (works with --show)",
-            dest="done",
-        )
-
-    def __configure_tasks_parser(self, subparsers):
-        """ add task options"""
-
-        self.task_parser = subparsers.add_parser(
-            "tasks",
-            description="Manage project tasks",
-            epilog="For more information check: {}".format(self.github_link),
-        )
-        # Positionnal arguments
-        self.task_parser.add_argument(
-            "project_name",
-            type=str,
-            help="select a project for task operations",
-            metavar="project_name",
-        )
-
-        # Optional arguments
-        task_group = self.task_parser.add_mutually_exclusive_group(required=True)
-        task_group.add_argument(
-            "-a",
-            "--add",
-            type=str,
-            nargs=1,
-            help="Add task to project",
-            metavar="task_name",
-            dest="create_task",
-        )
-        task_group.add_argument(
-            "-r",
-            "--remove",
-            action="store_true",
-            help="Remove task from project",
-            dest="delete_task",
-        )
-        task_group.add_argument(
-            "-u",
-            "--update",
-            type=str,
-            nargs=1,
-            metavar="task_name",
-            help="Update task name or description",
-            dest="update_task",
-        )
-        task_group.add_argument(
-            "-m",
-            "--move",
-            type=str,
-            nargs=1,
-            metavar="task_name",
-            help="Move task from one section to another",
-            dest="move_task",
-        )
-
-        # listing taskk group
-        list_tasks = task_group.add_mutually_exclusive_group()
-        list_tasks.add_argument(
-            "-l", "--all", action="store_true", help="List all tasks", dest="list_all",
-        )
-        list_tasks.add_argument(
-            "--open", action="store_true", help="List open tasks", dest="list_open"
-        )
-        list_tasks.add_argument(
-            "--inprogress",
-            action="store_true",
-            help="List in progress tasks",
-            dest="list_inprogress",
-        )
-        list_tasks.add_argument(
-            "--done", action="store_true", help="list done tasks", dest="list_done"
-        )
-
     def parse_args(self):
-        """Parse arguments and return the user desired operation
-
-        Return:
-            Dictionnary representing the project name, the task name, the operation,
-            and andy addional data
-        """
-
-        user_input: Dict = {
-            "project": False,
-            "task": False,
-            "operation": None,
-            "data": dict(),
-        }
         args = self.parser.parse_args()
+        if not args.command:
+            print(ROOT_USAGE)
+            exit(1)
+        
+        if args.command.startswith('p') and not args.option:
+            print(PROJECT_USAGE)
+            exit(2)
 
-        isProject = self.__parse_projects_args(args, user_input)
-        isTask = self.__parse_tasks_args(args, user_input)
+        if args.command.startswith('t') and not args.option:
+            print(TASK_USAGE)
+            exit(3)
+        return args
 
-        # check if no options is specified
-        if not any([isProject, isTask]):
-            self.parser.print_help()
+    def __configure_parser(self):
 
-        return user_input
+        self.parser = argparse.ArgumentParser(
+            prog='meistertask',
+            description="A CLI tools for Meistertask",
+            epilog=f"For more info check: https://github.com/ablil/meistertask-cli",
+        )
 
-    def __parse_projects_args(self, args, user_input: Dict):
-        """Parse project aguments
+        root_subparesers = self.parser.add_subparsers(
+            title="Meistertask core commands",
+            dest="command",
+            metavar="command",
+            help="[project, task]",
+        )
 
-        Parameters:
-        args: parsed args from command line (argsparse.parse_args())
-        user_input: dictionary which store the parsed arguement
+        project_parser = root_subparesers.add_parser(
+            "project",
+            aliases=["p"],
+            description="Manage projects",
+        )
+        task_parser = root_subparesers.add_parser(
+            "task",
+            aliases=["t"],
+            description="Manage tasks of a specific project",
+        )
 
-        Return:
-        bool: true if projects arguemtn are parsed, else False
-        """
+        project_subparsers = project_parser.add_subparsers(
+            title="Project commands",
+            dest="option",
+            metavar="[create, view, delete, archive, list]",
+        )
+        list_parser = project_subparsers.add_parser(
+            "list", aliases=["l", "ls"], description="List project by their type"
+        )
+        # TODO: make this arg optional with a default value of active
+        list_group = list_parser.add_mutually_exclusive_group(required=True)
+        list_group.add_argument(
+            "-a",
+            "--active",
+            help="list active project",
+            action="store_const",
+            const="active",
+            dest="type",
+        )
+        list_group.add_argument(
+            "--all", help="list all project", action="store_const", const="all", dest="type"
+        )
+        list_group.add_argument(
+            "--archived",
+            help="list arvhied project",
+            action="store_const",
+            const="archived",
+            dest="type",
+        )
 
-        try:
-            project_args = (
-                args.active_projects,
-                args.archived_projects,
-                args.all_projects,
-                args.create_project,
-                args.update_project,
-                args.delete_project,
-                args.archive_project,
-                args.read_project,
-            )
+        create_parser = project_subparsers.add_parser(
+            "create", aliases=["c"], description="Create new project"
+        )
+        create_parser.add_argument("name", help="project name")
+        create_parser.add_argument("-d", "--description", help="project description")
 
-            if any(project_args):
-                user_input["project"] = True
+        view_parser = project_subparsers.add_parser(
+            "view", aliases=["v", "show", "display"], description="View project details"
+        )
+        view_parser.add_argument("name", help="project name")
 
-                # Listing projects
-                if any(
-                    [args.active_projects, args.archived_projects, args.all_projects]
-                ):
-                    user_input["operation"] = "list"
-                    user_input["data"]["list_filter"] = "active"
+        delete_parser = project_subparsers.add_parser(
+            "delete", aliases=["d", "rm", "del", "remove"], description="Delete a project"
+        )
+        delete_parser.add_argument("name", help="project name")
 
-                    if args.archived_projects:
-                        user_input["data"]["list_filter"] = "archived"
-                    if args.all_projects:
-                        user_input["data"]["list_filter"] = "all"
+        archive_parser = project_subparsers.add_parser(
+            "archive", description="Archive a projet"
+        )
+        archive_parser.add_argument("name", help="project name")
 
-                if args.create_project:
-                    user_input["operation"] = "create"
-                    user_input["data"]["project_name"] = str(args.create_project[0])
-                if args.update_project:
-                    user_input["operation"] = "update"
-                    user_input["data"]["project_name"] = str(args.update_project)
-                if args.delete_project:
-                    user_input["operation"] = "delete"
-                    user_input["data"]["project_name"] = str(args.delete_project)
-                if args.archive_project:
-                    user_input["operation"] = "archive"
-                    user_input["data"]["project_name"] = str(args.archive_project)
-                if args.read_project:
-                    user_input["operation"] = "read"
-                    user_input["data"]["project_name"] = str(args.read_project[0])
-
-                    # check if section is specified
-                    if args.open:
-                        user_input["data"]["section"] = "open"
-                    if args.inprogress:
-                        user_input["data"]["section"] = "in progress"
-                    if args.done:
-                        user_input["data"]["section"] = "done"
-
-                return True
-            else:
-                self.project_parser.print_help()
-                exit(1)
-        except AttributeError:
-            return False
-
-    def __parse_tasks_args(self, args, user_input):
-        """Parse project aguments
-
-        Parameters:
-        args: parsed args from command line (argsparse.parse_args())
-        user_input: dictionary which store the parsed arguement
-
-        Return:
-        bool: true if arguemtn are parsed, else False
-        """
-        try:
-
-            task_args = (
-                args.project_name,
-                args.create_task,
-                args.delete_task,
-                args.update_task,
-                args.move_task,
-                args.list_all,
-                args.list_open,
-                args.list_inprogress,
-                args.list_done,
-            )
-
-            if any(task_args):
-                user_input["task"] = True
-                if not len(args.project_name):
-                    print(
-                        f"{RED}Project name must be specified for task management{END}"
-                    )
-                    exit(1)
-                else:
-                    user_input["data"]["project_name"] = str(args.project_name)
-
-                if args.create_task:
-                    user_input["operation"] = "create"
-                    user_input["data"]["task_name"] = str(args.create_task[0])
-                if args.delete_task:
-                    user_input["operation"] = "delete"
-                if args.update_task:
-                    user_input["operation"] = "update"
-                    user_input["data"]["task_name"] = str(args.update_task[0])
-                if args.move_task:
-                    user_input["operation"] = "move"
-                    user_input["data"]["task_name"] = str(args.move_task[0])
-
-                # listing args
-                if any(
-                    [
-                        args.list_all,
-                        args.list_open,
-                        args.list_done,
-                        args.list_inprogress,
-                    ]
-                ):
-                    user_input["operation"] = "list"
-                if args.list_all:
-                    user_input["data"]["list"] = "all"
-                if args.list_open:
-                    user_input["data"]["list"] = "open"
-                if args.list_inprogress:
-                    user_input["data"]["list"] = "in progress"
-                if args.list_done:
-                    user_input["data"]["list"] = "done"
-
-                return True
-            else:
-                self.task_parser.print_help()
-                exit(1)
-        except AttributeError:
-            return False
+        task_subparsers = task_parser.add_subparsers(
+            title="Task commands",
+            dest="option",
+            metavar="[create, list, update, delete, move]",
+        )
+        create_task = task_subparsers.add_parser(
+            "create", aliases=["c"], description="Create new task"
+        )
+        create_task.add_argument("name", help="task name")
+        create_task.add_argument("-d", "--description", help="task description")
+        create_task.add_argument("project", help="project name")
+        list_tasks = task_subparsers.add_parser(
+            "list", aliases=["l", "ls"], description="List tasks by section"
+        )
+        list_tasks.add_argument("project", help="project name")
+        list_task_group = list_tasks.add_mutually_exclusive_group(required=True)
+        list_task_group.add_argument(
+            "-a",
+            "--all",
+            action="store_const",
+            const="all",
+            dest="type",
+            help="list all tasks",
+        )
+        list_task_group.add_argument(
+            "-o",
+            "--open",
+            action="store_const",
+            const="open",
+            dest="type",
+            help="list open tasks",
+        )
+        list_task_group.add_argument(
+            "-i",
+            "--inprogess",
+            action="store_const",
+            const="inprogess",
+            dest="type",
+            help="list inprogress tasks",
+        )
+        list_task_group.add_argument(
+            "-d",
+            "--done",
+            action="store_const",
+            const="done",
+            dest="type",
+            help="list cone tasks",
+        )
+        update_task = task_subparsers.add_parser(
+            "update", aliases=['u', 'e', "edit"], description="Update task details"
+        )
+        update_task.add_argument("name", help="task name")
+        update_task.add_argument("project", help="project name")
+        
+        move_task = task_subparsers.add_parser(
+            "move", aliases=['m', "mv"], description="Move task to new section"
+        )
+        move_task.add_argument("name", help="task name")
+        move_task.add_argument("section", choices=["open", "inprogess", "done"])
+        move_task.add_argument("project", help="project name")
 
 
 if __name__ == "__main__":
-    print("This moodule is intended to be included only")
+    
+    parser = CustomParser()
+    args = parser.parse_args()
+    print(args)
