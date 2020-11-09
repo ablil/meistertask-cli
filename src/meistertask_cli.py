@@ -2,128 +2,44 @@
 
 from typing import Dict, List
 from .api import API
-from .parser import Parser
+from .parser import CustomParser
 import requests
 
+from .utils import select_one_project, select_one_section, select_one_task
 from .utils import CYAN, GREEN, SUCCESS, ERROR, YELLOW, RED, PURPLE, YELLOW, END
 from .utils import (
     display_project,
     display_task,
+    match_names,
     display_detailed_project,
-    print_error_and_exit,
-    yes_or_no,
     filter_sections_by_name,
     get_auth_key,
+    filter_tasks_by_section,
+    filter_sections_by_name
 )
 
 
 class Meistertask:
-    """ Core logic for meistertask-cli """
+    """Core logic of app"""
 
-    def __init__(self, user_input: Dict, key: str):
-        self.user_input = user_input
-        self.auth_key = key
-        self.api = API(self.auth_key)
+    def __init__(self, token: str):
+        self.token = token
+        self.api = API(self.token)
 
-    def run(self):
+    def project_create(self, name: str, description=""):
+        """create new project
 
-        ###############################
-        # Project management
-        ##############################
-        if self.user_input["project"]:
-            project: Dict = None
-
-            if self.user_input["operation"] == "list":
-                filter_keyword: str = self.user_input["data"]["list_filter"]
-                projects = self.api.get_projects(filter_keyword)
-                for project in projects:
-                    display_project(project)
-                else:
-                    print(f"\n[+]{GREEN} Total projects: {END} {len(projects)}")
-            elif self.user_input["operation"] == "create":
-                project_name: str = self.user_input["data"]["project_name"]
-                self._create_project(project_name)
-            else:
-                # exract project
-                project_name: str = self.user_input["data"]["project_name"]
-                if not len(project_name):
-                    print_error_and_exit("you must specify a project name")
-
-                projects: Dict = self.api._get_project_by_name(project_name)
-                project: Dict = self.__select_project_if_multiple(projects)
-
-                # check if project is found
-                if not project:
-                    print_error_and_exit("project not found")
-
-            if self.user_input["operation"] == "update":
-                self._update_project(project)
-
-            if self.user_input["operation"] == "delete":
-                self._delete_project(project)
-
-            if self.user_input["operation"] == "archive":
-                self._archive_project(project)
-
-            if self.user_input["operation"] == "read":
-
-                # check if filter option is passed
-                filter_keyword: str = None
-                if "section" in self.user_input["data"].keys():
-                    filter_keyword = str(self.user_input["data"]["section"])
-
-                self._show_project(project, filter_keyword)
-
-        ###############################
-        # Task management
-        ##############################
-        if self.user_input["task"]:
-
-            # extract project first
-            projects: List[Dict] = self.api._get_project_by_name(
-                self.user_input["data"]["project_name"]
-            )
-            project: Dict = self.__select_project_if_multiple(projects)
-            if not project:
-                print_error_and_exit("project not found")
-
-            if self.user_input["operation"] == "create":
-                task_name: str = str(self.user_input["data"]["task_name"])
-                self._add_task(task_name, project)
-
-            if self.user_input["operation"] == "delete":
-                print_error_and_exit(
-                    "delete operation is not available for the moment",
-                    "for mor info: https://github.com/ablil/meistertask-cli",
-                )
-
-            if self.user_input["operation"] == "update":
-                task_name: str = str(self.user_input["data"]["task_name"])
-                tasks: List[Dict] = self.api._get_task_by_name(project["id"], task_name)
-                task: Dict = self.__select_task_if_multiple(tasks)
-
-                self._update_task(task)
-
-            if self.user_input["operation"] == "move":
-                task_name: str = self.user_input["data"]["task_name"]
-                self._move_task(task_name, project)
-
-            if self.user_input["operation"] == "list":
-                self._show_project(project, self.user_input["data"]["list"])
-
-    def _create_project(self, name: str):
-
+        Params:
+        name: project name
+        description: project description
+        """
         if len(name) < 5:
-            print_error_and_exit(
-                "you must specify a valid project name",
-                "project name must be at least 05 characters",
-            )
-
-        description = str(input("Type project description (default: empty): "))
+            print(f"{RED}Project name must be at least 05 charcters{END}")
+            exit(1)
 
         response: Dict = self.api.create_project(name, description)
 
-        API.check_errors("failed to create project", response)
+        API.check_errors("Failed to create project", response)
 
         # add default sections: Open, In Progress, Done
         project_id: int = response["id"]
@@ -134,298 +50,287 @@ class Meistertask:
         display_project(response)
         print(f"[+] {SUCCESS}Project created Successfully{END}")
 
-    def _update_project(self, project: Dict):
+    def project_update(self, project: Dict):
+        # TODO: check this
+        # ! this method is not included in parser docs
         """update project name and description"""
 
-        if not project:
-            print_error_and_exit("not project is found")
-        else:
-            display_project(project)
+        display_project(project)
 
-            new_name: str = str(
-                input("Type project name (Leave empty to save previous name) : ")
-            ).strip()
-            new_description: str = str(
-                input(
-                    "Type project description (Leave empty to save privious description):\n"
-                )
-            ).strip()
-
-            if not len(new_name) and not len(new_description):
-                print(f"{CYAN} Nothing is updated{END}")
-                exit(0)
-            else:
-                confirmation: bool = yes_or_no(
-                    "are you sure you want to update the project"
-                )
-
-                if confirmation:
-                    response: Dict = self.api.update_project(
-                        project["id"], new_name, new_description
-                    )
-                    API.check_errors("failed to update project", response)
-
-                    # display updated project
-                    display_project(response)
-                    print(f"{SUCCESS}[+] Project updated successfully{END}")
-
-    def _delete_project(self, project: Dict):
-
-        if not yes_or_no("do you want to delete this project"):
-            print(f"{CYAN} No project is deleted{END}")
-            return
-
-        response: Dict = self.api.delete_project(project["id"])
-
-        # check errors
-        API.check_errors("failed to delete the project", response)
-
-        # parse repsonse
-        display_project(response)
-        print(f"{SUCCESS} [+] Project is deleted successfully{END}")
-
-    def _archive_project(self, project: Dict):
-
-        if not project:
-            print_error_and_exit("you must specify a project name")
-
-        if not yes_or_no("do you want to archive this project"):
-            print(f"{CYAN} No project is deleted{END}")
-            return
-
-        response: Dict = self.api.archive_project(project["id"])
-
-        # check errors
-        API.check_errors("failed to archive the project", response)
-
-        # parse repsonse
-        display_project(response)
-        print(f"{SUCCESS} [+] Project is archived successfully{END}")
-
-    def _show_project(self, project: None, keyword=None):
-        """Show a proejct by name.
-            Filter sections if keyword is passed
-
-        Parameters:
-        keyword: section filter keyword
-        """
-
-        if not project:
-            print_error_and_exit("you must specify a project")
-
-        if keyword == "all":
-            # do not apply any filter
-            keyword = None
-
-        # get sections and tasks
-        sections: List[Dict] = self.api._get_section_by_project(project["id"])
-        tasks: List[Dict] = self.api.get_tasks(project["id"])
-
-        # if section filter is applied from the command args, apply it
-        if keyword:
-            sections = filter_sections_by_name(sections, keyword)
-
-        # display project
-        display_detailed_project(project, sections, tasks)
-
-    def _add_task(self, name: str, project: Dict):
-
-        if len(name) < 5:
-            print_error_and_exit(
-                "please specify a valid task name",
-                "task name must be at least 05 characters",
+        new_name: str = str(
+            input("Type project name (Leave empty to save previous name) : ")
+        ).strip()
+        new_description: str = str(
+            input(
+                "Type project description (Leave empty to save privious description):\n"
             )
+        ).strip()
 
-        description: str = str(input("Type task description (default: empty): "))
-
-        # choose a section from the project for the task(default: open)
-        sections: List[Dict] = self.api._get_section_by_project(project["id"])
-        section: Dict = self.__select_section_if_multipe(sections)
-
-        response: Dict = self.api.add_task(section["id"], name, description)
-
-        API.check_errors("failed to add task", response)
-
-        display_task(response)
-        print(f"[+] {SUCCESS}Task addedd successfully{END}")
-
-    def _update_task(self, task: Dict):
-        """Update task name and description"""
-
-        if not task:
-            print_error_and_exit("task not found")
+        if not len(new_name) and not len(new_description):
+            print(f"{CYAN} Nothing is updated{END}")
+            exit(0)
         else:
-            display_task(task)
-
-            new_name: str = str(
-                input("Type task name (Leave empty to save previous name) : ")
-            ).strip()
-            new_description: str = str(
-                input(
-                    "Type task description (Leave empty to save privious description):\n"
-                )
-            ).strip()
-
-            if not len(new_name) and not len(new_description):
-                print(f"{CYAN} Nothing is updated{END}")
-                exit(0)
-            else:
-                confirmation: bool = yes_or_no(
-                    "are you sure you want to update this task"
-                )
-
-                if not len(new_name):
-                    new_name = task["name"]
-                if not len(new_description):
-                    new_description = task["note"]
-
-                if confirmation:
-                    response: Dict = self.api.update_task(
-                        task["id"], new_name, new_description
-                    )
-                    API.check_errors("failed to update project", response)
-
-                    # display updated project
-                    display_task(response)
-                    print(f"{SUCCESS}[+] Task updated successfully{END}")
-
-    def _move_task(self, name: str, project: Dict):
-        """Move task from one section to another
-
-        Parameters:
-        name: task name
-        project: the project which the task belong to
-        """
-
-        # get task
-        tasks: List[Dict] = self.api._get_task_by_name(project["id"], name)
-        task: Dict = self.__select_task_if_multiple(tasks)
-
-        # get section of choice
-        sections: List[Dict] = self.api._get_section_by_project(project["id"])
-        section: Dict = self.__select_section_if_multipe(sections)
-
-        # update
-        response: Dict = self.api.move_task(task["id"], section["id"])
-
-        API.check_errors("failed to move task", response)
-
-        display_task(response)
-        print(f"[+] {SUCCESS}Task moved successfully{END}")
-
-    def __select_project_if_multiple(self, projects: List[Dict]) -> Dict:
-        """Given a list of mulitple project, prompt the use to choose one
-            Return: project
-        """
-
-        project: Dict = None
-
-        if len(projects) == 0:
-            return None
-        elif len(projects) == 1:
-            project = projects[0]
-        else:
-
-            # get selected project from user
-            for i in range(len(projects)):
-                project: Dict = projects[i]
-                print("\t[{}] {}".format(i, project["name"]))
-
-            print(f"\n[?] {YELLOW}Multiple project with the same name are found{END}")
-
             while True:
                 try:
-                    choice = int(input("[?] Select a project: "))
-                    if choice < len(projects) and choice >= 0:
+                    choice = str(input('Do you want to archive this project [y/n] ?'))
+                    if choice.lower() in ['y', 'yes', 'no', 'n']:
                         break
-                except Exception:
-                    print(f"{YELLOW}Select a valid project number{END}")
+                    else:
+                        raise ValueError('Invalid choice')
+                except:
+                    print(f'{RED}Valid choices: [y, yes / n, no]{END}')
 
-            project = projects[choice]
+            if choice.lower() in ('y', 'yes'):
+                response: Dict = self.api.update_project(
+                    project["id"], new_name, new_description
+                )
+                API.check_errors("failed to update project", response)
 
-        return project
+                # display updated project
+                display_project(response)
+                print(f"{SUCCESS}[+] Project updated successfully{END}")
 
-    def __select_section_if_multipe(self, sections: List[Dict], default=0) -> Dict:
-        """Given a list of mulitple project, prompt the use to choose one
-        if not section is select, the default value is choosed
+    def project_delete(self, id: int):
+        """Delete project
 
-        Parameters:
-        sections: list of sections
-        default: default section if no one is selected
-
-        Return: section
+        Params:
+        id: project id
         """
-
-        choice: int = default
-
-        for i in range(len(sections)):
-            print("\t[{}] {}".format(i, sections[i]["name"]))
 
         while True:
             try:
-                choice = str(
-                    input("[?] Choose a section for your task (default: open): ")
-                )
+                choice = str(input("Do you want to delete this project [y/n]?"))
+                if choice.lower() in ["y", "yes", "n", "no"]:
+                    break
+            except:
+                print(f"{RED} Choose from [y, yes/n, no]{END}")
 
-                choice = default if not len(choice) else int(choice)
-                break
-            except Exception:
-                print("Please select a valid choice")
+        if choice.lower() in ["y", "yes"]:
+            response: Dict = self.api.delete_project(id)
 
-        return sections[choice]
+            # check errors
+            API.check_errors("failed to delete the project", response)
 
-    def __select_task_if_multiple(self, tasks: List[Dict]) -> Dict:
-        """Given a list of tasks, prompt the use to choose one
+            # parse repsonse
+            display_project(response)
+            print(f"{SUCCESS} [+] Project is deleted successfully{END}")
+        else:
+            print(f"{RED}No project is deleted{END}")
 
-        Returns:
-        task choosed by the users
+    def project_archive(self, id: int):
+        """Archive project
+
+        Params
+        id(int): project id
+        """
+        while True:
+            try:
+                choice = str(input("Do you want to archive this project [y/n] ?"))
+                if choice.lower() in ["y", "yes", "no", "n"]:
+                    break
+                else:
+                    raise ValueError("Invalid choice")
+            except:
+                print(f"{RED}Valid choices: [y, yes / n, no]{END}")
+
+        if choice.lower() in ["y", "yes"]:
+
+            response: Dict = self.api.archive_project(id)
+
+            # check errors
+            API.check_errors("failed to archive the project", response)
+
+            # parse repsonse
+            display_project(response)
+            print(f"{SUCCESS} [+] Project is archived successfully{END}")
+        else:
+            print(f"{RED}No project is archvied !{END}")
+
+    def project_view(self, id: int):
+        """View project
+
+        Parameters:
+        id(int) project id
         """
 
-        task: Dict = None
+        project: Dict = self.api.get_project(id)
+        display_project(project)
 
-        if len(tasks) == 0:
-            print_error_and_exit("no task is found, type the right name")
-        elif len(tasks) == 1:
-            task = tasks[0]
-        else:
-            for i in range(len(tasks)):
-                task: Dict = tasks[i]
-                print(
-                    "\t[{}] {}: {}".format(
-                        i,
-                        task["name"],
-                        task["notes"] if task["notes"] else "No Description",
-                    )
-                )
-            else:
-                print(f"\n{YELLOW}[?] Multiple tasks with the same name are found{END}")
+    def project_fetch_all(self, type="active") -> List[Dict]:
+        """Project all projects"""
 
-            while True:
-                try:
-                    choice = int(input("[?] Select a task: "))
-                    if choice < len(tasks) and choice >= 0:
-                        break
-                except Exception:
-                    print("Select a valid task number")
+        if type not in ("active", "archived", "all"):
+            raise ValueError(f"Project type is invalid: {type}")
 
-            task = tasks[choice]
+        projects: List[Dict] = self.api.get_projects(type)
+        if not projects or not len(projects):
+            print(f"{RED}No project is found{END}")
+            exit(1)
 
-        return task
+        return projects
 
+    def project_fetch(self, name: str) -> Dict:
+        """Fetch project by name"""
 
+        projects: List[Dict] = self.api.get_projects()
+        if not projects or not len(projects):
+            print(f"{RED}No project is found with name: {name}{END}")
+            exit(1)
+
+        matched: List = [p for p in projects if match_names(p["name"], name)]
+        return select_one_project(matched)
+
+    def task_create(self, name: str, project_id: int, description=""):
+        """Create new task on specific project
+
+        Params:
+        name(str) task name
+        project_id: project id
+        description(str) task description
+        """
+
+        if len(name) < 5:
+            print(f"{RED}Task name must be at least 05 characters{END}")
+            exit(1)
+
+        # choose a section from the project for the task(default: open)
+        sections: List[Dict] = self.api._get_section_by_project(project_id)
+        section: Dict = select_one_section(sections)
+
+        response: Dict = self.api.add_task(section["id"], name, description)
+        API.check_errors("failed to add task", response)
+        display_task(response)
+        print(f"[+] {SUCCESS}Task addedd successfully{END}")
+
+    def task_update(self, id: int, name: str, description: str):
+        """Update task name and description
+
+        Params:
+        id(int) task id
+        name(str) new task name
+        description(str) new task description
+        """
+
+        response: Dict = self.api.update_task(id, name, description)
+        API.check_errors("failed to update project", response)
+        display_task(response)
+        print(f"{SUCCESS}[+] Task updated successfully{END}")
+
+    def task_move(self, id: int, section_id: int):
+        """Move task from one section to another
+
+        Parameters:
+        id(int) task id
+        section_id(int) section id
+        """
+
+        response: Dict = self.api.move_task(id, section_id)
+        API.check_errors("failed to move task", response)
+        display_task(response)
+        print(f"[+] {SUCCESS}Task moved successfully{END}")
+
+    def task_fetch(self, name: str, project_id: str):
+        """Fetch task from project by name"""
+
+        tasks: List[Dict] = self.api.get_tasks(project_id)
+        if not tasks or not len(tasks):
+            print(f"{RED}No task is found in project{END}")
+            exit(1)
+
+        matched: List = [t for t in tasks if match_names(t["name"], name)]
+        return select_one_task(matched)
+
+    def task_fetch_all(self, project_id: int) -> List[Dict]:
+        """Fetch all task in project"""
+
+        tasks: List[Dict] = self.api.get_tasks(project_id)
+        if not tasks or not len(tasks):
+            print(f'{RED}No task is found in this project{END}')
+
+        return tasks
+
+    def section_fetch_all(self, id: int):
+        """Fetch sections of projec
+
+        Params:
+        id(int) project id
+        """
+
+        sections: List[Dict] = self.api._get_section_by_project(id)
+        if not sections or not len(sections):
+            print(f'{RED}No section is found in this project{END}')
+            exit(1)
+
+        return sections
+        
 def main():
+    token: str = get_auth_key()
+    meistertask: Meistertask = Meistertask(token)
 
-    parser = Parser()
-    user_input: Dict = parser.parse_args()
+    parser: CustomParser = CustomParser()
+    args = parser.parse_args()
 
-    auth_key: str = get_auth_key()
+    if args.command.startswith("p"):
+        print(f"{CYAN}Project management{END}")
 
-    meistertask = Meistertask(user_input, auth_key)
-    try:
-        meistertask.run()
-    except requests.exceptions.ConnectionError:
-        print_error_and_exit("no internet connection")
+        if args.option in ("c", "create"):
+            meistertask.project_create(args.name, args.description)
 
+        if args.option in ("v", "show", "display", "view"):
+            project: Dict = meistertask.project_fetch(args.name)
+            display_project(project)
+
+        if args.option in ("d", "delete", "r", "remove", "rm"):
+            project: Dict = meistertask.project_fetch(args.name)
+            display_project(project)
+            meistertask.project_delete(project["id"])
+
+        if args.option in ("l", "ls", "list"):
+            projects: List[Dict] = meistertask.project_fetch_all(args.type)
+            for p in projects:
+                display_project(p)
+
+    if args.command.startswith("t"):
+        print(f"{CYAN}Task management{END}")
+
+        if args.option in ("c", "create"):
+            project: Dict = meistertask.project_fetch(args.project)
+
+            description: str = args.description if args.description else ""
+            meistertask.task_create(args.name, project["id"], description)
+
+        if args.option in ("u", "update", "e", "edit"):
+            project: Dict = meistertask.project_fetch(args.project)
+            task: Dict = meistertask.task_fetch(args.name, project["id"])
+
+            display_task(task)
+            name: str = str(input("[?] Type name (Enter to skip):"))
+            description: str = str(input("[?] Type description (Enter to skip): "))
+
+            new_name = name if (name and len(name)) else task["name"]
+            new_description = (
+                description
+                if (description and len(description))
+                else task["description"]
+            )
+
+            meistertask.task_update(task['id'], new_name, new_description)
+
+        if args.option in ('ls', 'l', 'list'):
+            project: Dict = meistertask.project_fetch(args.project)
+            tasks: List[Dict] = meistertask.task_fetch_all(project["id"])
+
+            filtered = filter_tasks_by_section(tasks, args.type)
+            for t in filtered:
+                display_task(t)
+
+        if args.option in ('m', 'move', 'mv'):
+            project: Dict = meistertask.project_fetch(args.project)
+            task: Dict = meistertask.task_fetch(args.name, project["id"])
+            sections: List[Dict] = meistertask.section_fetch_all(project['id'])
+            section: Dict = filter_sections_by_name(sections, args.section)
+            meistertask.task_move(task['id'], section['id'])
+    
 
 if __name__ == "__main__":
     main()
