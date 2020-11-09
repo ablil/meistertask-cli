@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 from typing import Dict, List
-from .api import API
+from src.api import *
 from .parser import CustomParser
 import requests
+from .api import *
 
 from .utils import select_one_project, select_one_section, select_one_task
 from .utils import CYAN, GREEN, SUCCESS, ERROR, YELLOW, RED, PURPLE, YELLOW, END
@@ -16,6 +17,7 @@ from .utils import (
     get_auth_key,
     filter_tasks_by_section,
     filter_sections_by_name,
+    check_errors
 )
 
 
@@ -24,7 +26,9 @@ class Meistertask:
 
     def __init__(self, token: str):
         self.token = token
-        self.api = API(self.token)
+        self.api_project = APIProject(self.token)
+        self.api_task = APITask(self.token)
+        self.api_section = APISection(self.token)
 
     def project_create(self, name: str, description=""):
         """create new project
@@ -37,15 +41,15 @@ class Meistertask:
             print(f"{RED}Project name must be at least 05 charcters{END}")
             exit(1)
 
-        response: Dict = self.api.create_project(name, description)
+        response: Dict = self.api_project.project_create(name, description)
 
-        API.check_errors("Failed to create project", response)
+        check_errors("Failed to create project", response)
 
         # add default sections: Open, In Progress, Done
         project_id: int = response["id"]
-        self.api.create_section(project_id, "Open")
-        self.api.create_section(project_id, "In Progress")
-        self.api.create_section(project_id, "Done")
+        self.api_section.section_create(project_id, "Open")
+        self.api_section.section_create(project_id, "In Progress")
+        self.api_section.section_create(project_id, "Done")
 
         display_project(response)
         print(f"[+] {SUCCESS}Project created Successfully{END}")
@@ -53,8 +57,8 @@ class Meistertask:
     def project_update(self, id: int, name: str, description=""):
         """update project name and description"""
 
-        response: Dict = self.api.update_project(id, name, description)
-        API.check_errors("failed to update project", response)
+        response: Dict = self.api_project.project_update(id, name, description)
+        check_errors("failed to update project", response)
 
         display_project(response)
         print(f"{SUCCESS}[+] Project updated successfully{END}")
@@ -75,10 +79,10 @@ class Meistertask:
                 print(f"{RED} Choose from [y, yes/n, no]{END}")
 
         if choice.lower() in ["y", "yes"]:
-            response: Dict = self.api.delete_project(id)
+            response: Dict = self.api_project.project_delete(id)
 
             # check errors
-            API.check_errors("failed to delete the project", response)
+            check_errors("failed to delete the project", response)
 
             # parse repsonse
             display_project(response)
@@ -104,10 +108,10 @@ class Meistertask:
 
         if choice.lower() in ["y", "yes"]:
 
-            response: Dict = self.api.archive_project(id)
+            response: Dict = self.api_project.project_archive(id)
 
             # check errors
-            API.check_errors("failed to archive the project", response)
+            check_errors("failed to archive the project", response)
 
             # parse repsonse
             display_project(response)
@@ -122,7 +126,7 @@ class Meistertask:
         id(int) project id
         """
 
-        project: Dict = self.api.get_project(id)
+        project: Dict = self.api_project.project_fetch(id)
         display_project(project)
 
     def project_fetch_all(self, type="active") -> List[Dict]:
@@ -131,7 +135,7 @@ class Meistertask:
         if type not in ("active", "archived", "all"):
             raise ValueError(f"Project type is invalid: {type}")
 
-        projects: List[Dict] = self.api.get_projects(type)
+        projects: List[Dict] = self.api_project.project_fetch_all(type)
         if not projects or not len(projects):
             print(f"{RED}No project is found{END}")
             exit(1)
@@ -141,7 +145,7 @@ class Meistertask:
     def project_fetch(self, name: str) -> Dict:
         """Fetch project by name"""
 
-        projects: List[Dict] = self.api.get_projects()
+        projects: List[Dict] = self.api_project.project_fetch_all()
         if not projects or not len(projects):
             print(f"{RED}No project is found with name: {name}{END}")
             exit(1)
@@ -163,11 +167,11 @@ class Meistertask:
             exit(1)
 
         # choose a section from the project for the task(default: open)
-        sections: List[Dict] = self.api._get_section_by_project(project_id)
+        sections: List[Dict] = self.api_section.section_fetch_all(project_id)
         section: Dict = select_one_section(sections)
 
-        response: Dict = self.api.add_task(section["id"], name, description)
-        API.check_errors("failed to add task", response)
+        response: Dict = self.api_task.task_create(section["id"], name, description)
+        check_errors("failed to add task", response)
         display_task(response)
         print(f"[+] {SUCCESS}Task addedd successfully{END}")
 
@@ -180,8 +184,8 @@ class Meistertask:
         description(str) new task description
         """
 
-        response: Dict = self.api.update_task(id, name, description)
-        API.check_errors("failed to update project", response)
+        response: Dict = self.api_task.task_update(id, name, description)
+        check_errors("failed to update project", response)
         display_task(response)
         print(f"{SUCCESS}[+] Task updated successfully{END}")
 
@@ -193,15 +197,15 @@ class Meistertask:
         section_id(int) section id
         """
 
-        response: Dict = self.api.move_task(id, section_id)
-        API.check_errors("failed to move task", response)
+        response: Dict = self.api_task.task_move(id, section_id)
+        check_errors("failed to move task", response)
         display_task(response)
         print(f"[+] {SUCCESS}Task moved successfully{END}")
 
     def task_fetch(self, name: str, project_id: str):
         """Fetch task from project by name"""
 
-        tasks: List[Dict] = self.api.get_tasks(project_id)
+        tasks: List[Dict] = self.api_task.task_fetch_all(project_id)
         if not tasks or not len(tasks):
             print(f"{RED}No task is found in project{END}")
             exit(1)
@@ -212,7 +216,7 @@ class Meistertask:
     def task_fetch_all(self, project_id: int) -> List[Dict]:
         """Fetch all task in project"""
 
-        tasks: List[Dict] = self.api.get_tasks(project_id)
+        tasks: List[Dict] = self.api_task.task_fetch_all(project_id)
         if not tasks or not len(tasks):
             print(f"{RED}No task is found in this project{END}")
 
@@ -225,7 +229,7 @@ class Meistertask:
         id(int) project id
         """
 
-        sections: List[Dict] = self.api._get_section_by_project(id)
+        sections: List[Dict] = self.api_section.section_fetch_all(id)
         if not sections or not len(sections):
             print(f"{RED}No section is found in this project{END}")
             exit(1)

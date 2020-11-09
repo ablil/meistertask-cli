@@ -230,5 +230,19 @@ def filter_tasks_by_section(tasks: List[Dict], section: str) -> List[Dict]:
     filtered: List[Dict] = list(filter(callback, tasks))
     return filtered
 
+def check_errors(msg: str, response: Dict):
+    """Check if the reponse contains an errors.
+        Exit when found.
+
+    Parameters:
+    msg: message to display if an error is found
+    response: response object from the request call
+
+    """
+
+    if "errors" in response.keys():
+        print(f"{RED} [-] {msg.capitalize()}{END}")
+        print(f"{RED} Error: {END}", response["errors"][0]["message"])
+        exit(1)
 if __name__ == "__main__":
     print("This module is indented to be incluced only")
