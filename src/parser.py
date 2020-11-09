@@ -58,8 +58,7 @@ class CustomParser:
         list_parser = project_subparsers.add_parser(
             "list", aliases=["l", "ls"], description="List project by their type"
         )
-        # TODO: make this arg optional with a default value of active
-        list_group = list_parser.add_mutually_exclusive_group(required=True)
+        list_group = list_parser.add_mutually_exclusive_group()
         list_group.add_argument(
             "-a",
             "--active",
@@ -67,6 +66,7 @@ class CustomParser:
             action="store_const",
             const="active",
             dest="type",
+            default='active'
         )
         list_group.add_argument(
             "--all", help="list all project", action="store_const", const="all", dest="type"
