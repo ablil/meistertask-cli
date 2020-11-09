@@ -307,8 +307,11 @@ def main():
             tasks: List[Dict] = meistertask.task_fetch_all(project["id"])
 
             filtered = filter_tasks_by_section(tasks, args.type)
-            for t in filtered:
-                display_task(t)
+            if len(filtered):
+                for t in filtered:
+                    display_task(t)
+            else:
+                print(f'{CYAN}No task with section {args.type} is found{END}')
 
         if args.option in ("m", "move", "mv"):
             project: Dict = meistertask.project_fetch(args.project)
