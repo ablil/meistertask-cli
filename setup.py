@@ -8,7 +8,7 @@ README = (CWD / "README.md").read_text()
 setup(
     name="meistertask_cli",
     packages=find_packages(),
-    entry_points={"console_scripts": ["meistertask = src.meistertask_cli:main"]},
+    entry_points={"console_scripts": ["meistertask = src.__main__:main"]},
     version='0.0.2',
     description="Command-line client for Meistertask",
     long_description=README,
