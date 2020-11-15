@@ -2,7 +2,7 @@ from .meistertask import Meistertask
 from typing import List, Dict, Set  
 
 from typing import Dict, List
-from .parser import CustomParser
+from .parser import Parser
 from .api import *
 
 from .utils import CYAN, END
@@ -19,7 +19,7 @@ def main():
     token: str = get_auth_key()
     meistertask: Meistertask = Meistertask(token)
 
-    parser: CustomParser = CustomParser()
+    parser: Parser = Parser()
     args = parser.parse_args()
 
     if args.command.startswith("p"):
