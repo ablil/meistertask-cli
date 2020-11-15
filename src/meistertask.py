@@ -140,10 +140,14 @@ class Meistertask:
 
         projects: List[Dict] = self.api_project.project_fetch_all()
         if not projects or not len(projects):
-            print(f"{RED}No project is found with name: {name}{END}")
+            print(f"{RED}You do NOT have any project {END}")
             exit(1)
 
         matched: List = [p for p in projects if match_names(p["name"], name)]
+        if not matched or not len(matched):
+            print(f'{RED}No project is found with name: {name} {END}')
+            exit(1)
+            
         return select_one_project(matched)
 
     def task_create(self, name: str, project_id: int, description=""):
