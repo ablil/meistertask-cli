@@ -57,6 +57,7 @@ def main():
             projects: List[Dict] = meistertask.project_fetch_all(args.type)
             for p in projects:
                 display_project(p)
+            print(f'\n{CYAN}Total number of projects: {len(projects)}{END}')
 
     if args.command.startswith("t"):
         print(f"{CYAN}Task management{END}")
@@ -92,6 +93,7 @@ def main():
             if len(filtered):
                 for t in filtered:
                     display_task(t)
+                print(f'\n{CYAN}Total number of tasks: {len(filtered)}{END}')
             else:
                 print(f'{CYAN}No task with section {args.type} is found{END}')
 
