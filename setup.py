@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 from os import path
 import pathlib
+from version import VERSION
 
 CWD = pathlib.Path(__file__).parent
 README = (CWD / "README.md").read_text()
@@ -9,7 +10,7 @@ setup(
     name="meistertask_cli",
     packages=find_packages(),
     entry_points={"console_scripts": ["meistertask = src.__main__:main"]},
-    version='0.0.2',
+    version=VERSION,
     description="Command-line client for Meistertask",
     long_description=README,
     long_description_content_type='text/markdown',
