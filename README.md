@@ -1,14 +1,14 @@
 # Meistertask CLI
 
+[![PyPI version](https://badge.fury.io/py/meistertask-cli.svg)](https://badge.fury.io/py/meistertask-cli)
+
 ## What is meistertask-cli
 
 Meistertask is a cloud-based project management tool, based on Kanban-style.
 If you are familiar with Trello, then think of it the same way
 
 **Recent changelog**:
-  * wrap output text when displaying tasks description
-  * add feature to update task name and description
-  * style sucess/error message on output
+  * new arguement paser (easy to use).
 
 ## Why I build this ?
 
@@ -23,7 +23,7 @@ And here it is :smiely:
 
 ## Overview (video need to be updated)
 
-[![asciicast](https://asciinema.org/a/350669.svg)](https://asciinema.org/a/350669)
+[![asciicast](https://asciinema.org/a/373205)](https://asciinema.org/a/373205)
 
 
 ## Requirement
@@ -63,161 +63,42 @@ export MEISTERTASK=your-key-here
 meistertask --help
 ```
 
-
 ### Project help
 ```
-usage: meistertask projects [-h] [-l | --archived | --all] [-c name] [-u name] [-d name] [-a name]
-                                [-s name] [--open | --inprogress | --done]
+USAGE:
+    meistertask project <subcommand> [flags]
 
-Manage meistertask projects
+SUBCOMMANDS
+    create:     Create project
+    view:       View project
+    update:     Update project name and description
+    delete:     Delete project
+    list:       List projects (active, deleted, archived)
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -l, --active          List active projects
-  --archived            List archived projects
-  --all                 List all projects
-  -c name, --create name
-                        Create new project
-  -u name, --update name
-                        Update project name/description
-  -d name, --delete name
-                        Delete a project
-  -a name, --archive name
-                        Archive a project
-  -s name, --show name  Show project in details
-  --open                Show only open tasks (works with --show)
-  --inprogress          Show only tasks in progress (works with --show)
-  --done                Show only tasks which are done (works with --show)
-
-For more information check: https://github.com/ablil/meistertask-cli
+SUBCOMMANDS ALIASES:
+    create:     c
+    view:       v, show, display
+    update:     u, e, edit
+    delete:     d, rm, del, remove
+    list:       l, ls
 ```
 ### Tasks help
 ```
-usage: meistertask-cli tasks [-h] (-a task_name | -r | -m task_name | [-l | --open | --inprogress | --done)]
-                             project_name
+USAGE:
+    meistertask task <subcommand> [flags] <project name>
 
-Manage project tasks
+SUBCOMMANDS
+    create:     Create taks
+    list:       List tasks by section
+    update:     Update task name and description
+    move:       Move task to another section
 
-positional arguments:
-  project_name          select a project for task operations
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -a task_name, --add task_name
-                        Add task to project
-  -r, --remove          Remove task from project
-  -m task_name, --move task_name
-                        Move task from one section to another
-  -l, --all             List all tasks
-  --open                List open tasks
-  --inprogress          List in progress tasks
-  --done                list done tasks
-
-For more information check: https://github.com/ablil/meistertask-cli
+SUBCOMMANDS ALIASES:
+    create:     c
+    list:       l, ls
+    update:     u, e, edit
+    move:       m, mv
 ```
-You can typically perfom the following operations
-
-* Create new project
-    ```
-    user@box#: python3 meistertask-cli.py projects --create 'my new project'
-    Type project description (default: empty): lorem ipsum random text
-
-    > Project Name:  my new project
-    > Project Description:  lorem ipsum random text
-    > Created at:  2020-07-20 16:11:11
-    > Updated at:  2020-07-20 16:11:11
-    [+] Project created Successfully
-    ```
-
-* Show a project in Details
-    ```
-    user@box#: python3 meistertask-cli projects --show 'bug-tracker'
-    > Project Name:  bug-tracker
-    > Project Description:  bug tracker for web developper and project managers
-        > Section:  Open
-            > Task:  registration ui
-            > Description:  design and translate to html/css
-
-            > Task:  reset password ui
-            > Description:  design and translate to html/css
-
-            > Task:  project structure
-            > Description:  create project and setup dependencies
-
-            > Task:  authentication
-            > Description:  None
-
-            > Task:  replace bootstrap with angular material
-            > Description:  check attached link
-
-            > Task:  make list of styles to use
-            > Description:  fonts, color, overriding default angular material
-    ....
-    ```
-
-* List all your projects:
-    ```
-    user@box#: python3 meistertask-cli.py projects -l
-
-    > Project Name:  College Attendance App
-    > Project Description:  Android Project for School
-    > Created at:  2020-03-20 01:26:13
-    > Updated at:  2020-05-11 02:45:18
-
-    > Project Name:  bug-tracker
-    > Project Description:  bug tracker for web developper and project managers
-    > Created at:  2020-07-08 10:46:22
-    > Updated at:  2020-07-12 13:33:04
-
-    > Project Name:  test project
-    > Project Description:  descriton
-    > Created at:  2020-07-19 19:59:23
-    > Updated at:  2020-07-19 19:59:23
-    ```
-
-* Add new task
-    ```
-    user@box#: python3 meistertask-cli.py tasks --add 'my first task' 'myprojectname'
-    Type task description (default: empty): do some operation here
-    [0] Open
-    [1] In Progress
-    [2] Done
-    [?] Choose a section for your task (default: open):
-
-    > Task:  my first task
-    > Description:  do some operation here
-    > Section:  Open
-    > Created:  2020-07-20 16:40:11
-    [+] Task addedd successfully
-    ```
-
-* Move task to a new sections
-    ```
-    user@box#: python3 meistertask-cli.py tasks --update-task 'my first task' 'myprojectname'
-        [0] my first task (None)
-        [1] my first task (this is the descriptions)
-        [2] my first task (do some operation here)
-
-    [?] Multiple tasks with the same name are found
-    [?] Select a task: 2
-    [0] Open
-    [1] In Progress
-    [2] Done
-    [?] Choose a section for your task (default: open): 1
-
-    > Task:  my first task
-    > Description:  do some operation here
-    > Section:  In Progress
-    > Created:  2020-07-20 16:40:11
-    [+] Task updated successfully
-    ```
-
-## Limitation
-
-The following operation, even thougth they are included in the programm, but they are not yet suported the offical api.
-The offcial api is in beta version, once a new feature is added, the meistertrask-cli will be updated as soon as possible.
-
-    * delete task
 
 ## Contribution
 Building this app is very easy, if you are familiar with the basic of python3 and API.
@@ -232,3 +113,5 @@ Or contact me: ablil@pm.me
 - [x] Colorful output
 - [ ] Checklist support
 - [ ] Comment tasks
+- [ ] Edit project details
+- [ ] Allow usage of project/task id insted if name

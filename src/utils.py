@@ -66,10 +66,9 @@ def display_task(task: Dict, long_format=True):
             print(wrap_text(description, width=50, tabs=3))
 
 
-
 def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Dict]):
     """Given a project, it's sections and tasks,
-        group tasks by section and display them
+    group tasks by section and display them
     """
 
     # display project summary
@@ -96,7 +95,7 @@ def display_detailed_project(project: Dict, sections: List[Dict], tasks: List[Di
 
 def get_auth_key():
     """Read auth key from environment variable.
-        Variable name: MEISTERTASK
+    Variable name: MEISTERTASK
     """
     try:
         return str(os.environ["MEISTERTASK"])
@@ -107,34 +106,13 @@ def get_auth_key():
         exit(1)
 
 
-def filter_sections_by_name(sections: List[Dict], name: str) -> List:
-    return list(
-        filter(
-            lambda section: re.match(
-                section["name"].lower().strip(), name.lower().strip()
-            ),
-            sections,
-        )
-    )
+def filter_sections_by_name(sections: List[Dict], name: str) -> Dict:
+    """Filter section by name and return only one or not"""
 
+    callback = lambda section: section["name"].lower().strip() == name.lower().strip()
+    filtered: List[Dict] = list(filter(callback, sections))
+    return filtered[0] if len(filtered) else None
 
-def print_error_and_exit(*messages):
-
-    for msg in messages:
-        print(f"{RED} [-] {msg.capitalize()}{END}")
-
-    exit(1)
-
-
-def yes_or_no(message: str) -> bool:
-    """Prompt use for confirmation"""
-    while True:
-        choice = str(input(f"{YELLOW}{message} [y/N]: {END}"))
-
-        if choice.lower() in ("y", "yes"):
-            return True
-        if choice.lower() in ("n", "no"):
-            return False
 
 
 def match_names(name1: str, name2: str) -> bool:
@@ -166,15 +144,105 @@ def match_names(name1: str, name2: str) -> bool:
 
     return False
 
+
 def wrap_text(text: str, width=50, tabs=2):
     if text:
         text: List[str] = textwrap.wrap(text, width=width)
         leading_tabs: str = tabs * "\t"
-        text = [''.join([leading_tabs, line]) for line in text]
-        text: str = '\n'.join(text)
+        text = ["".join([leading_tabs, line]) for line in text]
+        text: str = "\n".join(text)
     else:
-        text = ''
+        text = ""
     return text
 
+
+def select_one_project(projects: List[Dict]) -> Dict:
+    """Prompt use to select one project"""
+    if not projects or not len(projects):
+        return None
+
+    if len(projects) == 1:
+        return projects[0]
+
+    # Display available projects
+    for index, project in enumerate(projects):
+        print(f'\t[{index}] {project["name"]}')
+    print(f"{YELLOW}Multiple projects are found, select one.{END}")
+
+    while True:
+        try:
+            choice = int(input("[?] Project id: "))
+            if choice >= 0 and choice < len(projects):
+                return projects[choice]
+        except:
+            print(f"{RED}Select valid project id{END}")
+
+
+def select_one_section(sections: List[Dict]) -> Dict:
+    """Prompt user to select one section"""
+    if not sections or not len(sections):
+        return None
+
+    if len(sections) == 1:
+        return sections[0]
+
+    # display available sections
+    for index, section in enumerate(sections):
+        print(f'\t[{index}] {section["name"]}')
+    print(f"{YELLOW}Multiple sections are fond, select one.{END}")
+
+    while True:
+        try:
+            choice = int(input("[?] Section id: "))
+            if choice >= 0 and choice < len(sections):
+                return sections[choice]
+        except:
+            print(f"{RED}Select valid section id{END}")
+
+
+def select_one_task(tasks: List[Dict]) -> Dict:
+    """Prompt user to select one task"""
+
+    if not tasks or not len(tasks):
+        return None
+
+    if len(tasks) == 1:
+        return tasks[0]
+
+    # Display available task
+    for index, task in enumerate(tasks):
+        print(f'[{index}] {task["name"]}')
+    print(f"{YELLOW}Multiple tasks are found, select one.{END}")
+
+    while True:
+        try:
+            choice = int(input("[?] Task id: "))
+            if choice >= 0 and choice < len(tasks):
+                return tasks[choice]
+        except:
+            print(f"{RED}Select valid task id{END}")
+
+
+def filter_tasks_by_section(tasks: List[Dict], section: str) -> List[Dict]:
+    """Filter tasks by section"""
+
+    callback = lambda t: t["section_name"].lower().strip() == section.lower().strip()
+    filtered: List[Dict] = list(filter(callback, tasks))
+    return filtered
+
+def check_errors(msg: str, response: Dict):
+    """Check if the reponse contains an errors.
+        Exit when found.
+
+    Parameters:
+    msg: message to display if an error is found
+    response: response object from the request call
+
+    """
+
+    if "errors" in response.keys():
+        print(f"{RED} [-] {msg.capitalize()}{END}")
+        print(f"{RED} Error: {END}", response["errors"][0]["message"])
+        exit(1)
 if __name__ == "__main__":
     print("This module is indented to be incluced only")
