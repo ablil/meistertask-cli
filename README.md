@@ -21,9 +21,9 @@ And here it is :smiely:
 
 > **warning**: *Some of the features are not available because the official meistertask api does not support them yet.*
 
-## Overview (video need to be updated)
+## Overview 
 
-[![asciicast](https://asciinema.org/a/373205)](https://asciinema.org/a/373205)
+[![asciicast](https://asciinema.org/a/373205.svg)](https://asciinema.org/a/373205)
 
 
 ## Requirement
